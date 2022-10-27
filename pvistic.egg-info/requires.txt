@@ -1,6 +1,0 @@
-requests
-pandas
-tzwhere
-geopy
-numpy
-warnings

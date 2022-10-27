@@ -1,13 +1,13 @@
 Metadata-Version: 2.1
-Name: pv-sim
-Version: 0.0.1
+Name: pvmodule
+Version: 0.0.2
 Summary: A library used to simulate photovoltaic energy production using PVGIS
 Home-page: UNKNOWN
 Author: Fábio Almeida
 Author-email: <fabio-r-almeida@outlook.com>
 License: UNKNOWN
 Description: 
-        # pv-sim
+        # Photovoltaic Simulator using real-world data from PVGIS.
 Keywords: python,PVGIS,simulator,photovoltaic,solar energy,solar panels,solar simulation
 Platform: UNKNOWN
 Classifier: Development Status :: 1 - Planning

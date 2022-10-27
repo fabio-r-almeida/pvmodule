@@ -1,1 +1,1 @@
-# pv-sim
+# Photovoltaic Simulator using real-world data from PVGIS.
