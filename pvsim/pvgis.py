@@ -47,7 +47,6 @@ class PVGIS():
     
     import requests
     import pandas as pd
-    import json
 
     self.latitude=latitude
     self.longitude=longitude
@@ -130,8 +129,7 @@ class PVGIS():
     
     import requests
     import pandas as pd
-    import json
-
+    
     self.latitude=latitude
     self.longitude=longitude
     self.usehorizon=usehorizon
@@ -196,7 +194,6 @@ class PVGIS():
     
     import requests
     import pandas as pd
-    import json
 
     self.month = month
     self.latitude=latitude

@@ -21,7 +21,7 @@ setup(
     long_description_content_type="text/markdown",
     long_description=long_description,
     packages=find_packages(),
-    install_requires=['requests', 'pandas', 'json', 'tzwhere','geopy','numpy','warnings'],
+    install_requires=['requests', 'pandas', 'tzwhere','geopy','numpy','warnings'],
     keywords=['python', 'PVGIS', 'simulator', 'photovoltaic', 'solar energy', 'solar panels','solar simulation'],
     classifiers=[
         "Development Status :: 1 - Planning",
