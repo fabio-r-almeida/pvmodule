@@ -122,7 +122,7 @@ class PVGIS():
       return print(f'Error: {data}')
 
 
-    self.data = outputs, inputs, meta
+    self.data = inputs, outputs, meta
     return self.data
 
   def retrieve_monthly(self, latitude, longitude, usehorizon=1,userhorizon=None, raddatabase=None, startyear=None, endyear = None, horirrad=1, optrad=0, selectrad=0, angle=0, mr_dni=1, d2g=1, avtemp=1, outputformat='json', url='http://re.jrc.ec.europa.eu/api/v5_2/'):
@@ -187,7 +187,7 @@ class PVGIS():
       return print(f'Error: {data}')
 
 
-    self.data = outputs, inputs, meta
+    self.data = inputs, outputs, meta
     return self.data
 
   def retrieve_daily(self, latitude, longitude, month, usehorizon=1, userhorizon = None, raddatabase=None, angle=0, aspect = 0, global_irr = 1, glob_2axis = 0, clearsky = 0, clearsky_2axis = 0, showtemperatures = 1, localtime = 1, outputformat='json', url='http://re.jrc.ec.europa.eu/api/v5_2/'):
@@ -255,5 +255,5 @@ class PVGIS():
       return print(f'Error: {data}')
 
 
-    self.data = outputs, inputs, meta
+    self.data = inputs, outputs, meta
     return self.data

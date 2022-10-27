@@ -1,15 +1,13 @@
 from setuptools import setup, find_packages
-import codecs
-import os
 
-here = os.path.abspath(os.path.dirname(__file__))
+try:
+    import pypandoc
+    long_description = pypandoc.convert_file('README.md', 'rst')
+except(IOError, ImportError):
+    long_description = open('README.md').read()
 
-with codecs.open(os.path.join(here, "README.md"), encoding="utf-8") as fh:
-    long_description = "\n" + fh.read()
-
-VERSION = '0.0.2'
+VERSION = '0.0.7'
 DESCRIPTION = 'A library used to simulate photovoltaic energy production using PVGIS'
-LONG_DESCRIPTION = 'A package that allows to build systems and simulate energy production using real-world data from PVGIS.'
 
 # Setting up
 setup(

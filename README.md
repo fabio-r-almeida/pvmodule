@@ -1,1 +1,144 @@
-# Photovoltaic Simulator using real-world data from PVGIS.
+# pvmodule
+
+This library is a work in progress where the main objective is to create an easy to use and complete library to simulate photovoltaic energy production throughout multiple scenarios.
+
+
+
+
+
+## Defining the location 
+
+```python
+>>> from pvmodule.location import Location
+>>> from pvmodule.pvgis import PVGIS
+
+>>> Location = Location()
+>>> location = Location.set_location('Lisbon')
+
+>>> print(location.name)
+Lisboa, Portugal
+
+>>> print(location.timezone)
+Europe/Lisbon
+
+>>> print(location.latitude)
+38.7077507
+
+>>> print(location.longitude)
+-9.1365919
+
+>>> print(location.elevation)
+10.93380069732666
+```
+
+## Retrieving Hourly data from PVGIS
+
+```python
+>>> from pvmodule.location import Location
+>>> from pvmodule.pvgis import PVGIS
+
+>>> Location = Location()
+>>> location = Location.set_location('Oeiras')
+
+>>> PVGIS = PVGIS()
+>>> input, output, meta = PVGIS.retrieve_hourly(
+                                            latitude=location.latitude, 
+                                            longitude=location.longitude
+                                            )
+>>> print(output)
+
+                     G(i)  H_sun    T2m  WS10m  Int
+time                                               
+2005-01-01 00:10:00   0.0    0.0  11.29   3.86  0.0
+2005-01-01 01:10:00   0.0    0.0  11.19   4.14  0.0
+2005-01-01 02:10:00   0.0    0.0  11.08   4.07  0.0
+2005-01-01 03:10:00   0.0    0.0  10.94   3.66  0.0
+2005-01-01 04:10:00   0.0    0.0  10.84   3.24  0.0
+...                   ...    ...    ...    ...  ...
+2020-12-31 19:10:00   0.0    0.0  12.50   8.28  0.0
+2020-12-31 20:10:00   0.0    0.0  12.12   8.34  0.0
+2020-12-31 21:10:00   0.0    0.0  11.58   8.48  0.0
+2020-12-31 22:10:00   0.0    0.0  11.41   8.28  0.0
+2020-12-31 23:10:00   0.0    0.0  11.36   8.14  0.0
+
+[140256 rows x 5 columns]
+```
+
+## Retrieving daily data from PVGIS (July)
+
+```python
+>>> from pvmodule.location import Location
+>>> from pvmodule.pvgis import PVGIS
+
+>>> Location = Location()
+>>> location = Location.set_location('Oeiras')
+
+>>> PVGIS = PVGIS()
+>>> input, output, meta = PVGIS.retrieve_daily(
+                                           latitude=location.latitude, 
+                                           longitude=location.longitude,
+                                           month=6
+                                           )
+>>> print(output)
+
+       month    G(i)   Gb(i)   Gd(i)    T2m
+time                                       
+00:00      6    0.00    0.00    0.00  17.49
+01:00      6    0.00    0.00    0.00  17.35
+02:00      6    0.00    0.00    0.00  17.21
+03:00      6    0.00    0.00    0.00  17.09
+04:00      6    0.00    0.00    0.00  16.98
+05:00      6    0.00    0.00    0.00  16.91
+06:00      6   88.17   36.65   51.52  16.97
+07:00      6  244.22  136.17  108.05  17.53
+08:00      6  406.34  251.83  154.51  18.42
+09:00      6  560.33  366.56  193.77  19.39
+10:00      6  691.23  479.46  211.78  20.29
+11:00      6  788.61  558.10  230.51  21.05
+12:00      6  869.24  632.05  237.19  21.59
+13:00      6  877.81  644.56  233.24  21.88
+14:00      6  828.50  609.14  219.36  21.92
+15:00      6  738.56  540.56  198.01  21.75
+16:00      6  594.07  420.05  174.01  21.38
+17:00      6  426.24  280.32  145.91  20.88
+18:00      6  244.49  141.33  103.16  20.25
+19:00      6   82.36   35.16   47.20  19.45
+20:00      6    0.00    0.00    0.00  18.68
+21:00      6    0.00    0.00    0.00  18.18
+22:00      6    0.00    0.00    0.00  17.90
+23:00      6    0.00    0.00    0.00  17.69
+```
+
+## Retrieving Monthly data from PVGIS (July)
+
+```python
+>>> from pvmodule.location import Location
+>>> from pvmodule.pvgis import PVGIS
+
+>>> Location = Location()
+>>> location = Location.set_location('Oeiras')
+
+>>> PVGIS = PVGIS()
+>>> input, output, meta = PVGIS.retrieve_monthly(
+                                            latitude = location.latitude,
+                                            longitude = location.longitude,
+                                            startyear=2020,
+                                            endyear=2020
+                                            )
+>>> print(output)
+
+    year  month  H(h)_m  Hb(n)_m    Kd   T2m
+0   2020      1   71.23   107.98  0.42  12.8
+1   2020      2   98.98   131.26  0.38  13.8
+2   2020      3  147.58   168.06  0.36  13.7
+3   2020      4  157.34   145.53  0.42  14.8
+4   2020      5  218.93   220.23  0.31  18.1
+5   2020      6  231.53   235.23  0.30  18.7
+6   2020      7  244.94   261.47  0.26  21.2
+7   2020      8  208.59   217.80  0.30  20.6
+8   2020      9  159.27   167.80  0.36  20.3
+9   2020     10  117.98   143.74  0.39  17.1
+10  2020     11   68.78    81.66  0.52  15.4
+11  2020     12   63.66    93.93  0.46  12.9
+
+```
