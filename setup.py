@@ -13,7 +13,7 @@ LONG_DESCRIPTION = 'A package that allows to build systems and simulate energy p
 
 # Setting up
 setup(
-    name="pv-sim",
+    name="pvistic",
     version=VERSION,
     author="Fábio Almeida",
     author_email="<fabio-r-almeida@outlook.com>",
