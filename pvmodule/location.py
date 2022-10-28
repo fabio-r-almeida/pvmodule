@@ -7,19 +7,28 @@ class Location():
         self.timezone = None  # timezone
         self.name = None  # name
 
-    def set_location(
-        self,
-        city: str,
-        latitude: float = None,
-        longitude: float = None,
-        elevation: float = None,
-        timezone: str = None,
-        name: str = None,
-    ) -> object:
+    def set_location(self, city: str, latitude: float = None, longitude: float = None, elevation: float = None, timezone: str = None, name: str = None, ) -> object:
         """
         Using the city name, this method will geolocate its coordinates, elevation, timezone.
         To use costum locations, just input the desired parameters and they will overwrite the geolocation.
+        Parameters
+        ----------
+        city: str
+          The name of the city in which the system is going to be built.
+        latitude: float, default = None,
+          A specific latitude to overwrite the automatic search.
+        longitude: float, default = None,
+          A specific longitude to overwrite the automatic search.
+        elevation: float, default = None,
+          A specific elevation to overwrite the automatic search.
+          This elevation corresponds to how many meters the city is above the sea-level.
+        timezone: str, default = None,
+          The timezone in which the city is located.
+          A specific timezone to overwrite the automatic search.
+        name: str, default = None,
+          The name of the system. This does not affect anything.
         """
+
         from tzwhere import tzwhere
         import requests
         from geopy.geocoders import Nominatim
