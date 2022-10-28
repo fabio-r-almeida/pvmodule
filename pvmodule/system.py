@@ -320,5 +320,8 @@ class System():
       dc_prod = System().dc_production(module, T_amb, Irradiance,temp, isolated_module ,dc_losses)
       pac_grid_injected = System()._ac_production_inverter(inverter, dc_prod['V (U)'], dc_prod['DC Power']) * (1 - ac_losses)
       pac_grid_injected[pac_grid_injected < 0] = 0
+      pac_grid_injected = pac_grid_injected.to_frame()
+      pac_grid_injected.columns = ['AC Power']
+      pac_grid_injected['DC Power'] = dc_prod['DC Power']
   
       return pac_grid_injected
