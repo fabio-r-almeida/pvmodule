@@ -1,4 +1,5 @@
 class System():
+  
     def __init__(self):
         self.spacing = None
         self.plot_height = None
