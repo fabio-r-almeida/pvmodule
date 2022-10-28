@@ -299,7 +299,6 @@ class PVGIS():
           Longitude, in decimal degrees, west is negative.
         month: int,
           The value of this parameter should be the number of the month, starting at 1 for January. If you give the value 0 (zero) you will instead get data for all the months.
-
         usehorizon: int, default = 1,
           Calculate taking into account shadows from high horizon. Value of 1 for "yes".
         userhorizon: int, default = None,
@@ -386,6 +385,90 @@ class PVGIS():
             outputs = data["outputs"]["daily_profile"]
             outputs = pd.json_normalize(outputs)
             outputs = outputs.set_index("time")
+
+            inputs = data["inputs"]
+
+            meta = data["meta"]
+
+        except:
+            return print(f"Error: {data}")
+
+        self.data = inputs, outputs, meta
+        return self.data
+
+    def retrieve_tmy(self, latitude: float, 
+                     longitude: float, 
+                     usehorizon: int = 1, 
+                     userhorizon: int = None, 
+                     startyear: int = None, 
+                     endyear: int = None, 
+                     outputformat: str = "json", 
+                     url: str = "http://re.jrc.ec.europa.eu/api/v5_2/", ) -> object:
+        """
+        Daily Data: This method retrieves real-world data using the PVGIS-API.
+        The months count start at January=0 and December=11
+        ...
+        It outputs 3 dataframes with the following structure:
+        Inputs , Outputs, Metadata
+
+        Parameters
+        ----------
+        latitude: float, 
+          Latitude, in decimal degrees, south is negative.
+        longitude: float
+          Longitude, in decimal degrees, west is negative.
+        startyear: int, default = None,
+          First year of the output of monthly averages. Availability varies with the temporal coverage of the radiation DB chosen. The default value is the first year of the DB.
+        endyear: int, default = None,
+          Final year of the output of monthly averages. Availability varies with the temporal coverage of the radiation DB chosen. The default value is the last year of the DB.
+        usehorizon: int, default = 1,
+          Calculate taking into account shadows from high horizon. Value of 1 for "yes".
+        userhorizon: int, default = None,
+          Height of the horizon at equidistant directions around the point of interest, in degrees. Starting at north and moving clockwise. The series '0,10,20,30,40,15,25,5' would mean the horizon height is 0° due north, 10° for north-east, 20° for east, 30° for south-east, etc.
+        outputformat: str, default = "json",
+          Type of output. Choices are: "csv" for the normal csv output with text explanations, "basic" to get only the data output with no text, and "json".
+        url: str, default = "http://re.jrc.ec.europa.eu/api/v5_2/",
+            PVGIS 5.1: https://re.jrc.ec.europa.eu/api/v5_1/
+            PVGIS 5.2: https://re.jrc.ec.europa.eu/api/v5_2/
+
+      """
+        import requests
+        import pandas as pd
+
+        self.latitude = latitude
+        self.longitude = longitude
+        self.usehorizon = usehorizon
+        self.userhorizon = userhorizon
+        self.startyear = startyear
+        self.endyear = endyear
+        self.outputformat = outputformat
+        self.url = url
+        self.data = None
+
+        url = (
+            self.url
+            + f"tmy?lat={self.latitude}&lon={self.longitude}"
+        )
+
+        if self.usehorizon != None:
+            url = url + f"&usehorizon={self.usehorizon}"
+        if self.userhorizon != None:
+            url = url + f"&userhorizon={self.userhorizon}"
+        if self.startyear != None:
+            url = url + f"&startyear={self.startyear}"
+        if self.endyear != None:
+            url = url + f"&endyear={self.endyear}"
+        if self.outputformat != None:
+            url = url + f"&outputformat={self.outputformat}"
+
+        self.url = url
+        data = requests.get(url).json()
+        try:
+            outputs = data["outputs"]["tmy_hourly"]
+            outputs = pd.json_normalize(outputs)
+            outputs["time(UTC)"] = pd.to_datetime(outputs["time(UTC)"], format="%Y%m%d:%H%M")
+            outputs = outputs.set_index("time(UTC)")
+            outputs.index.names = ['time']
 
             inputs = data["inputs"]
 

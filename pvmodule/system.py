@@ -1,5 +1,4 @@
 class System():
-  
     def __init__(self):
         self.spacing = None
         self.plot_height = None
@@ -43,20 +42,6 @@ class System():
             beta_n = 90 - latitude + beta
             self.spacing = round( MHeight * ( math.cos(tilt * math.pi / 180) + (math.sin(tilt * math.pi / 180)) / (math.tan(beta_n)) ), 3, )
         return self.spacing
-
-    def __i_v_curve(self):
-      '''not yet funcitonal'''
-      import math
-      I_0 = 1e-10
-      I_l = 0.5
-      n = 1
-      T = 300
-      V = 0.5
-      q = 1.602176634e-19
-      k=1
-      I = I_l - I_0 * (math.e**(q*V)/(n*k*T))
-      return I_0 * (math.e**(q*V)/(n*k*T))
-
 
     #def __module_quantity(self, MLength, MHeight, PLength, PHeight, tilt):
     #    """
@@ -152,7 +137,7 @@ class System():
       dc_prod = pd.DataFrame(dc_prod)
       dc_prod.columns = ['DC Power']
       dc_prod['G(i)'] = Irradiance
-      dc_prod['V (U)'] = PV/estimated_current
+      dc_prod['U (V)'] = PV/estimated_current
       dc_prod['I (A)'] = estimated_current
       dc_prod = dc_prod.fillna(0)
       if Temp == True:
@@ -319,7 +304,7 @@ class System():
       """
 
       dc_prod = System().dc_production(module, T_amb, Irradiance,temp, isolated_module ,dc_losses)
-      pac_grid_injected = System()._ac_production_inverter(inverter, dc_prod['V (U)'], dc_prod['DC Power']) * (1 - ac_losses)
+      pac_grid_injected = System()._ac_production_inverter(inverter, dc_prod['U (V)'], dc_prod['DC Power']) * (1 - ac_losses)
       pac_grid_injected[pac_grid_injected < 0] = 0
       pac_grid_injected = pac_grid_injected.to_frame()
       pac_grid_injected.columns = ['AC Power']
