@@ -1,9 +1,5 @@
 # pvmodule
-
 This library is a work in progress where the main objective is to create an easy to use and complete library to simulate photovoltaic energy production throughout multiple scenarios.
-
-
-
 
 
 ## Defining the location 
@@ -225,11 +221,14 @@ Using a default CECinverter from an included list.
 ```python
 
 >>> system = System()
+#Wind consideration can be included
+#system_ac = system.ac_production(module, output['T2m'], output['G(i)'], inverter, wind=True, wind_speed=output['WS10m'])
+#system_dc_wind = system.dc_production(module, output['T2m'], output['G(i)'],wind=True, wind_speed=output['WS10m'], temp=True)
 
 >>> inverter_list = system.list_inverters()
 >>> inverter = system.select_inverter('ABB: PVI-3.0-OUTD-S-US-A [240V]')
 >>> system_ac = system.ac_production(module, output['T2m'], output['G(i)'], inverter)
-
+ 
 >>> print(system_ac)
 >>> import matplotlib.pyplot as plt
 >>> system_ac.plot()
@@ -262,3 +261,4 @@ time
 23:00    0.000000    0.000000
 ```
 ![alt text](https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/documentation/ac_power_documentation.png)
+

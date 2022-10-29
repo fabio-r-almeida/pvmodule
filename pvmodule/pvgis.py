@@ -47,7 +47,7 @@ class PVGIS():
         self.showtemperatures = None  # ,showtemperatures
         self.localtime = None  # localtime
 
-    def retrieve_hourly( self, latitude: float, longitude: float, usehorizon: int = 1, userhorizon: int = None, raddatabase: str = None, startyear: int = None, endyear: int = None, pvcalculation: int = 0, peakpower: float = None, pvtechchoice: str = "crystSi", mountingplace: str = "free", loss: float = None, trackingtype: int = 0, surface_tilt: float = 0, surface_azimuth: float = 0, optimalinclination: int = 0, optimalangles: int = 0, components: int = 0, outputformat: str = "json", url: str = "http://re.jrc.ec.europa.eu/api/v5_2/", ) -> object:
+    def retrieve_hourly( self, latitude: float, longitude: float, usehorizon: int = 1, userhorizon: int = None, raddatabase: str = None, startyear: int = None, endyear: int = None, pvcalculation: int = 0, peakpower: float = None, pvtechchoice: str = "crystSi", mountingplace: str = "free", loss: float = None, trackingtype: int = 0, surface_tilt: float = 0, surface_azimuth: float = 0, optimalinclination: int = 0, optimalangles: int = 0, components: int = 0, outputformat: str = "json", url: str = "http://re.jrc.ec.europa.eu/api/v5_2/") -> object:
         """
         Hourly Data: This method retrieves real-world data using the PVGIS-API.
         ...
@@ -173,6 +173,10 @@ class PVGIS():
             return print(f"Error: {data}")
 
         self.data = inputs, outputs, meta
+        if(outputs['T2m'].mean() == 0 or outputs['WS10m'].mean() == 0):
+          if 'v5_2' in self.url:
+            return PVGIS().retrieve_hourly(self.latitude, self.longitude, self.usehorizon, self.userhorizon, self.raddatabase, self.startyear, self.endyear, self.pvcalculation, self.peakpower, self.pvtechchoice, self.mountingplace, self.loss, self.trackingtype, self.surface_tilt, self.surface_azimuth, self.optimalinclination, self.optimalangles, self.components, self.outputformat, url = "http://re.jrc.ec.europa.eu/api/v5_1/")
+             
         return self.data
 
     def retrieve_monthly(self, latitude: float, longitude: float, usehorizon: int = 1, userhorizon: int = None, raddatabase: str = None, startyear: int = None, endyear: int = None, horirrad: int = 1, optrad: int = 0, selectrad: int = 0, angle: int = 0, mr_dni: int = 1, d2g: int = 1, avtemp: int = 1, outputformat: str = "json", url: str = "http://re.jrc.ec.europa.eu/api/v5_2/", ) -> object:
@@ -281,6 +285,7 @@ class PVGIS():
             return print(f"Error: {data}")
 
         self.data = inputs, outputs, meta
+
         return self.data
 
     def retrieve_daily(self, latitude: float, longitude: float, month: int, usehorizon: int = 1, userhorizon: int = None, raddatabase: str = None, angle: int = 0, aspect: int = 0, global_irr: int = 1, glob_2axis: int = 0, clearsky: int = 0, clearsky_2axis: int = 0, showtemperatures: int = 1, localtime: int = 1, outputformat: str = "json", url: str = "http://re.jrc.ec.europa.eu/api/v5_2/", ) -> object:
@@ -393,6 +398,20 @@ class PVGIS():
         except:
             return print(f"Error: {data}")
 
+        
+        input_tmy, output_tmy, metadata_tmy = PVGIS().retrieve_tmy(latitude,longitude)
+
+        output_tmy = output_tmy[output_tmy.index.month == self.month]
+        
+        df = pd.DataFrame()
+        df = pd.DataFrame(index=outputs.index)
+        wind_speed = []
+
+        for hour in range(0,24,1):
+          wind_speed.append(output_tmy.iloc[hour:24+hour, :]['WS10m'].mean())
+
+        outputs['WS10m'] = wind_speed
+
         self.data = inputs, outputs, meta
         return self.data
 
@@ -403,7 +422,7 @@ class PVGIS():
                      startyear: int = None, 
                      endyear: int = None, 
                      outputformat: str = "json", 
-                     url: str = "http://re.jrc.ec.europa.eu/api/v5_2/", ) -> object:
+                     url: str = "http://re.jrc.ec.europa.eu/api/v5_1/", ) -> object:
         """
         Daily Data: This method retrieves real-world data using the PVGIS-API.
         The months count start at January=0 and December=11
@@ -460,6 +479,7 @@ class PVGIS():
             url = url + f"&endyear={self.endyear}"
         if self.outputformat != None:
             url = url + f"&outputformat={self.outputformat}"
+
 
         self.url = url
         data = requests.get(url).json()
