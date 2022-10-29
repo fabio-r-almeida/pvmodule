@@ -173,6 +173,7 @@ class PVGIS():
             return print(f"Error: {data}")
 
         self.data = inputs, outputs, meta
+
         if(outputs['T2m'].mean() == 0 or outputs['WS10m'].mean() == 0):
           if 'v5_2' in self.url:
             return PVGIS().retrieve_hourly(self.latitude, self.longitude, self.usehorizon, self.userhorizon, self.raddatabase, self.startyear, self.endyear, self.pvcalculation, self.peakpower, self.pvtechchoice, self.mountingplace, self.loss, self.trackingtype, self.surface_tilt, self.surface_azimuth, self.optimalinclination, self.optimalangles, self.components, self.outputformat, url = "http://re.jrc.ec.europa.eu/api/v5_1/")
@@ -412,6 +413,10 @@ class PVGIS():
 
         outputs['WS10m'] = wind_speed
 
+        if(outputs['T2m'].mean() == 0 or outputs['WS10m'].mean() == 0):
+          if 'v5_2' in self.url:
+            return PVGIS().retrieve_daily(self.latitude, self.longitude, self.month, self.usehorizon, self.userhorizon, self.raddatabase, self.angle, self.aspect, self.global_irr, self.glob_2axis, self.clearsky, self.clearsky_2axis, self.showtemperatures, self.localtime, self.outputformat, url= "http://re.jrc.ec.europa.eu/api/v5_1/", )
+       
         self.data = inputs, outputs, meta
         return self.data
 
