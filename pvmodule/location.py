@@ -67,3 +67,13 @@ class Location():
                 self.elevation = result.json()["results"][0]["elevation"]
 
         return self
+
+    def get_info(location):
+
+      return {
+          'Address':location.name,
+          'Latitude':location.latitude,
+          'Longitude':location.longitude,
+          'Elevation':location.elevation,
+          'Timezone':location.timezone,
+          }
