@@ -1,4 +1,4 @@
-#@title System function
+#@title System class { display-mode: "form" }
 class System():
     def __init__(self):
         self.spacing = None
@@ -64,73 +64,7 @@ class System():
 #
     #    return self.total_modules, self.modules_per_string, self.number_of_strings
 
-    def module(self, name: str = "LG_Neon_2_ LG350N1C-V5", height: float = 1.686, length: float = 1.016, width: float = 40, pdc: float = 350, umpp: float = 35.3, impp: float = 9.92, uoc: float = 41.3, isc: float = 10.61, NOCT: float = 42, efficiency:float = 20.4, tc_pmax: float = -0.36, tc_voc: float = -0.27, tc_isc: float = 0.03, modules_per_string:int=1, number_of_strings:int=1, losses:float=0,first_year_degradation:float=2, annual_degradation:float=0.33 ) -> dict:
-      """
-      This method defines the module used for the calculations.
-      The standarts module is the LG_Neon_2_ LG350N1C-V5 with the following specsheet:
-      Datasheet
-      ---------
-        Name ='LG_Neon_2_ LG350N1C-V5',
-        Height (meters) : 1.686,
-        Length (meters) : 1.016,
-        Width (meters) : 0.040,
-        Pdc (Watt) : 350,
-        Umpp (Volt) : 35.3,
-        Impp (A) : 9.92,
-        Uoc (V) : 41.3,
-        Isc (A): 10.61,
-        NOCT (ºC) : 42,
-        Efficiency (%) : 20.4
-        Tc_pmax (%/ºC) : -0.36,
-        Tc_voc (%/ºC) : -0.27,
-        Tc_isc (%/ºC) : 0.03,
-        losses (%) : 0
-        first_year_degradation (%) : 2%
-        annual_degradation (%) : 0.33%
-      """
-
-      self.name = name
-      self.height = height
-      self.length = length
-      self.width = width
-      self.pdc = pdc
-      self.umpp = umpp
-      self.impp = impp
-      self.uoc = uoc
-      self.isc = isc
-      self.NOCT = NOCT
-      self.efficiency = efficiency
-      self.tc_pmax = tc_pmax
-      self.tc_voc = tc_voc
-      self.tc_isc = tc_isc
-      self.modules_per_string = modules_per_string
-      self.number_of_strings = number_of_strings
-      self.losses = losses
-      self.first_year_degradation =first_year_degradation
-      self.annual_degradation = annual_degradation
-
-      return {
-          'name':self.name,
-          'height':self.height,
-          'length':self.length,
-          'width':self.width,
-          'pdc':self.pdc,
-          'umpp':self.umpp,
-          'impp':self.impp,
-          'uoc':self.uoc,
-          'isc':self.isc,
-          'NOCT':self.NOCT,
-          'efficiency':self.efficiency,
-          'tc_pmax':self.tc_pmax,
-          'tc_voc':self.tc_voc,
-          'tc_isc':self.tc_isc,
-          'modules_per_string':self.modules_per_string,
-          'number_of_strings':self.number_of_strings,
-          'losses':self.losses,
-          'first_year_degradation':self.first_year_degradation,
-          'annual_degradation':self.annual_degradation
-          
-          }
+    
         
 ############################################
 # DC Power calculation.
@@ -281,35 +215,9 @@ class System():
 
       return power_ac
 
-    def list_inverters(self, url:str='https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/CEC%20Inverters.csv'):
-      """
-      List of inverters provided by CEC.
-      Parameters
-      ----------
-      url : str, default = 'https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/CEC%20Inverters.csv'
-          Url to the list of inverters. Can also be a .csv file.
-      """
-      import pandas as pd
-      inverters = pd.read_csv(url).replace(" ", "")
 
-      return inverters
 
-    def select_inverter(self, name:str, list):
-      """
-      Select the inverter from a provided list.
-      To access the list, please use the method:
-        list_inverters()
 
-      Parameters
-      ----------
-      name : str
-          The name of the inverter, as listed on the list.
-
-      list : DataFrame.dtype
-          A list with the inverter and its specifications.
-      """
-
-      return list.loc[list['Name'] == name]
 
 
 

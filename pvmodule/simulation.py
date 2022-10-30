@@ -1,3 +1,4 @@
+#@title Simulation class { display-mode: "form" }
 class Simulation():
   #def __init__(self):
 
@@ -51,7 +52,6 @@ class Simulation():
       import pandas as pd
       degradation = []
       degradation_year = []
-      degradation_efficiency = []
 
       ac_system = pd.DataFrame()
       dc_system = pd.DataFrame()
@@ -81,7 +81,6 @@ class Simulation():
           ac_system = ac_system.append(system_ac)
 
         degradation_df = pd.DataFrame(degradation,columns=['Module Degradation'])
-        degradation_df['Module Efficiency'] = degradation_df * module['efficiency'] / 100
         degradation_df['Year'] = degradation_year
 
         if download == True:
@@ -105,9 +104,9 @@ class Simulation():
         The location of the desired simulation
       startyear:int , default= 2005
         The startyear of the simulation. When using PVGIS API V5_2, it can go from 2005 to 2020. If wind information if missing, it will use API v5_1 and therefore only go from 2005 to 2016. (this might depend on the location and database data available)
-      surface_tilt:float , default=35
+      surface_tilt:float , default=90
         The tilt of the module. This data is being used to fetch real-world data from PVGIS API (degrees)
-      surface_azimuth:float , default=35
+      surface_azimuth:float , default= 90 and -90
         The azimuth of the module. This data is being used to fetch real-world data from PVGIS API (degrees)
       duration:int, default= 1
         The duration of the simulation. This will can only be as long as there is available data.
@@ -150,7 +149,6 @@ class Simulation():
       import pandas as pd
       degradation = []
       degradation_year = []
-      degradation_efficiency = []
 
       ac_system = pd.DataFrame()
       dc_system = pd.DataFrame()
@@ -180,7 +178,6 @@ class Simulation():
           ac_system = ac_system.append(system_ac)
 
         degradation_df = pd.DataFrame(degradation,columns=['Module Degradation'])
-        degradation_df['Module Efficiency'] = degradation_df * module['efficiency'] / 100
         degradation_df['Year'] = degradation_year
 
         if download == True:
@@ -193,4 +190,3 @@ class Simulation():
 
 
       return ac_system , degradation_df
-
