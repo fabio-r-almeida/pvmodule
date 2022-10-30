@@ -1,3 +1,4 @@
+#@title PVGIS class { display-mode: "form" }
 class PVGIS():
     """
     PVGIS class retrieves real-world data from the PVGIS-API.

@@ -6,7 +6,7 @@ try:
 except(IOError, ImportError):
     long_description = open('README.md').read()
 
-VERSION = '0.0.19'
+VERSION = '0.0.20'
 DESCRIPTION = 'A library used to simulate photovoltaic energy production using PVGIS'
 
 # Setting up
