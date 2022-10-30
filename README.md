@@ -1,7 +1,3 @@
-# pvmodule
-This library is a work in progress where the main objective is to create an easy to use and complete library to simulate photovoltaic energy production throughout multiple scenarios.
-
-
 ## Defining the location 
 
 ```python
@@ -11,20 +7,17 @@ This library is a work in progress where the main objective is to create an easy
 >>> Location = Location()
 >>> location = Location.set_location('Lisbon')
 
->>> print(location.name)
-Lisboa, Portugal
+>>> print(location.get_info())
 
->>> print(location.timezone)
-Europe/Lisbon
+{
+ 'Address': 'Lisboa, Portugal', 
+ 'Latitude': 38.7077507, 
+ 'Longitude': -9.1365919, 
+ 'Elevation': 10.93380069732666, 
+ 'Timezone': 'Europe/Lisbon'
+ }
 
->>> print(location.latitude)
-38.7077507
 
->>> print(location.longitude)
--9.1365919
-
->>> print(location.elevation)
-10.93380069732666
 ```
 
 ## Retrieving Hourly data from PVGIS
@@ -262,3 +255,39 @@ time
 ```
 ![alt text](https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/documentation/ac_power_documentation.png)
 
+
+```python
+
+>>> from pvmodule.location import Location
+>>> from pvmodule.system import System
+>>> from pvmodule.simulation import Simulation
+
+>>> location = Location().set_location('Covilhã')
+
+>>> module = System().module()
+>>> list_inverter = System().list_inverters()
+>>> inverter = System().select_inverter('ABB: PVI-3.0-OUTD-S-US-A [240V]',list_inverter)
+
+>>> output, degradacao = Simulation().simulate_vertical(module, inverter, location, duration=15, startyear=2020)
+
+>>> import matplotlib.pyplot as plt
+
+>>> output = output[output.index.month == 7]
+>>> output = output[output.index.day == 7]
+
+>>> fig, ax1 = plt.subplots()
+ 
+>>> ax2 = ax1.twinx()
+>>> ax1.plot(output.index, output['AC Power'], 'g-')
+>>> ax2.plot(output.index, output['Wind Speed'], '*')
+>>> ax1.plot(output.index, output['DC Power'], 'r-')
+ 
+>>> ax1.set_xlabel('Time')
+>>> ax1.set_ylabel('AC/DC Power', color='r')
+>>> ax2.set_ylabel('Wind speed', color='b')
+
+>>> plt.show()
+
+```
+
+![alt text](https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/documentation/vertical_ac_dc_documentation.png)

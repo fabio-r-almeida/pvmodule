@@ -147,9 +147,6 @@ class Simulation():
       output = output1.add(output2, fill_value=0)
       output = output.mul({'G(i)': 1, 'T2m': 0.5, 'WS10m':0.5})
 
-      print(output1.head(24), output2.head(24), output.head(24))
-      print(input1, input2)
-
       import pandas as pd
       degradation = []
       degradation_year = []
