@@ -354,94 +354,15 @@ class System():
       pac_grid_injected = pac_grid_injected.to_frame()
       pac_grid_injected.columns = ['AC Power']
       pac_grid_injected['DC Power'] = dc_prod['DC Power']
+      if wind == True:
+        pac_grid_injected['Wind Speed'] = wind_speed
+      if temp == True:
+        pac_grid_injected['Cell Temperature'] = dc_prod['Cell Temperature']
+      if isolated_module == True:
+        pac_grid_injected['1 Module AC'] = pac_grid_injected['AC Power'] / (module['modules_per_string']*module['number_of_strings'])
+        pac_grid_injected['1 Module DC'] = pac_grid_injected['DC Power'] / (module['modules_per_string']*module['number_of_strings'])
+
   
       return pac_grid_injected
-
-    def simulate(self,module, inverter, location, ac_losses:float=0, dc_losses:bool=False, duration:int = 1, startyear:int = 2005, surface_tilt:float=35, surface_azimuth:float=0, wind:bool=True ):
-      """
-      This method simulates the AC Power and DC Power a system would provide to the grid, using a provided module and a provided inverter (for AC Power). The efficiency for the inverter is calculated using the methos described here: https://www.nrel.gov/docs/fy15osti/64102.pdf
-      Parameters
-      ----------
-      location: Location.location
-        The location of the desired simulation
-      startyear:int , default= 2005
-        The startyear of the simulation. When using PVGIS API V5_2, it can go from 2005 to 2020. If wind information if missing, it will use API v5_1 and therefore only go from 2005 to 2016. (this might depend on the location and database data available)
-      surface_tilt:float , default=35
-        The tilt of the module. This data is being used to fetch real-world data from PVGIS API (degrees)
-      surface_azimuth:float , default=35
-        The azimuth of the module. This data is being used to fetch real-world data from PVGIS API (degrees)
-      duration:int, default= 1
-        The duration of the simulation. This will can only be as long as there is available data.
-      module :  DataFrame.dtype
-          Photovoltaic module, can be parameterized using the method:
-            module()
-      inverter:
-          Dataframe with all the inverter characteristics. Can be selected using:
-              list_inverters() -> select_inverters()
-      dc_losses:bool, default=False
-          Setting this to true will include losses on the DC side of the system.
-          The default value for the losses are zero, has to be changed in the module parameters.
-          This value if in percentage
-      ac_losses: float, default=0
-          Setting this to true will include losses on the AD side of the system.
-          The default value for the losses are zero. 
-          This value if in percentage.
-      wind:bool, default=False
-          Setting this to True will include wind cooling effects on the module.
-          wind_speed has to be provided (dataframe)
-      wind_speed :  DataFrame.dtype
-          Dataframe that includes the wind speed.
-      """
-     
-      from pvmodule import PVGIS
-
-      if startyear < 2005 or startyear > 2020:
-        return print('Startyear must be between 2005 and 2020')
-
-      input, output, metadata = PVGIS().retrieve_hourly(latitude=location.latitude, longitude=location.longitude, surface_tilt=surface_tilt, surface_azimuth=surface_azimuth, startyear = startyear )
-      output = output.drop(['H_sun','Int'], axis = 1)
-
-      import pandas as pd
-      degradation = []
-      degradation_year = []
-      degradation_efficiency = []
-
-      ac_system = pd.DataFrame()
-      dc_system = pd.DataFrame()
-
-      for year in range(duration):
-        if startyear + year > 2020:
-          break
-        if year == 0 :
-          output_year = output[output.index.year == startyear + year]
-          degradation.append(100)
-          degradation_value = 100
-          degradation_year.append(startyear + year)
-        elif year == 1:
-          output_year = output[output.index.year == startyear + year]
-          degradation.append(((1-module['first_year_degradation']/100))*100)
-          degradation_value = ((1-module['first_year_degradation']/100))*100
-          degradation_year.append(startyear + year)
-        else: 
-          output_year = output[output.index.year == startyear + year]
-          degradation.append(((1-module['first_year_degradation']/100)*(1-module['annual_degradation']/100)**(year-1))*100)
-          degradation_value = ((1-module['first_year_degradation']/100)*(1-module['annual_degradation']/100)**(year-1))*100
-          degradation_year.append(startyear + year)
-        for month in range(1,13):
-          output_month = output_year[output_year.index.month == month]
-          system_ac = System().ac_production(module=module, T_amb=output_month['T2m'], Irradiance=output_month['G(i)'], inverter=inverter, ac_losses=ac_losses, dc_losses=dc_losses, wind=wind, wind_speed=output_month['WS10m'])
-          system_ac = system_ac * degradation_value/100        
-          ac_system = ac_system.append(system_ac)
-        
-
-        
-
-
-        degradation_df = pd.DataFrame(degradation,columns=['Module Degradation'])
-        degradation_df['Module Efficiency'] = degradation_df * module['efficiency'] / 100
-        degradation_df['Year'] = degradation_year
-
-      return ac_system , degradation_df
-
 
 

@@ -3,6 +3,7 @@ setup.py
 pvmodule/__init__.py
 pvmodule/location.py
 pvmodule/pvgis.py
+pvmodule/simulation.py
 pvmodule/system.py
 pvmodule.egg-info/PKG-INFO
 pvmodule.egg-info/SOURCES.txt

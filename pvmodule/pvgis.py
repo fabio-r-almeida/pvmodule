@@ -145,9 +145,9 @@ class PVGIS():
         if self.trackingtype != None:
             url = url + f"&trackingtype={self.trackingtype}"
         if self.surface_tilt != None:
-            url = url + f"&surface_tilt={self.surface_tilt}"
+            url = url + f"&angle={self.surface_tilt}"
         if self.surface_azimuth != None:
-            url = url + f"&surface_azimuth={self.surface_azimuth}"
+            url = url + f"&aspect={self.surface_azimuth}"
         if self.optimalinclination != None:
             url = url + f"&optimalinclination={self.optimalinclination}"
         if self.optimalangles != None:
