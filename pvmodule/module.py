@@ -4,7 +4,7 @@ class Modules():
       self.url = 'https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/PV_Modules.csv'
 
 
-    def list_modules(self,wattage:int = None, url:str='https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/PV_Modules.csv'):
+    def list_modules(self,wattage:int = None):
       """
       List of modules.
       Parameters
@@ -13,18 +13,13 @@ class Modules():
           Url to the list of modules. Can also be a .csv file.
       """
       import pandas as pd
-      self.url = url
       modules = pd.read_csv(self.url).replace(" ", "")
       if wattage != None:
         modules = modules.loc[modules['Pmax'] == int(wattage)]
 
       from tabulate import tabulate
-      if modules.shape[0] > 1000:
-        step = 1000
-      else:
-        step = modules.shape[0]
-      for rows in range(0,modules.shape[0],step-1):
-        print(tabulate(modules.head(rows), headers='keys', tablefmt='psql'))
+
+      print(tabulate(modules, headers='keys', tablefmt='psql'))
       return modules
 
     def module(self,model:str ,modules_per_string:int=1, number_of_strings:int=1,losses:float=0, first_year_degradation:float=2,annual_degradation:float=0.33, url: str='https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/PV_Modules.csv') -> dict:
@@ -54,5 +49,27 @@ class Modules():
                   'losses': losses,
                   'first_year_degradation': first_year_degradation,
                   'annual_degradation': annual_degradation }
+
+    def modules_spacing(self, module, tilt: float, n_year: int = None, latitude: float = None) -> float:
+        """
+        This method calculates the necessary spacing between modules to eliminate shading/parcial shading.
+        To calculate the worst-case scenario, use only:
+          module - the module object
+          tilt - surface tilt of the module (degree)
+
+        To calculate for a specific time of the year, use in addition
+          n_year - the day in the year
+          latitude - latitude of the system
+        """
+        import math
+
+        if n_year == None or latitude == None:
+            self.spacing = round(module['Long Side'] * ( math.cos(tilt * math.pi / 180) + (math.sin(tilt * math.pi / 180)) / (math.tan(23.45 * math.pi / 180)) ), 3, )
+
+        else:
+            beta = 23.45 * math.sin((360 / 365) * math.pi / 180) * (n_year - 81)
+            beta_n = 90 - latitude + beta
+            self.spacing = round( module['Long Side'] * ( math.cos(tilt * math.pi / 180) + (math.sin(tilt * math.pi / 180)) / (math.tan(beta_n)) ), 3, )
+        return self.spacing
       
   

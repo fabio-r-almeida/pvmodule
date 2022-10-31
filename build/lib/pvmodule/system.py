@@ -22,27 +22,6 @@ class System():
         self.tc_isc = None
         self.losses = None
 
-    def __modules_spacing(self, MHeight: float, tilt: float, n_year: int = None, latitude: float = None) -> float:
-        """
-        This method calculates the necessary spacing between modules to eliminate shading/parcial shading.
-        To calculate the worst-case scenario, use only:
-          MHeight - height of the module (meters)
-          tilt - surface tilt of the module (degree)
-
-        To calculate for a specific time of the year, use in addition
-          n_year - the day in the year
-          latitude - latitude of the system
-        """
-        import math
-
-        if n_year == None or latitude == None:
-            self.spacing = round(MHeight * ( math.cos(tilt * math.pi / 180) + (math.sin(tilt * math.pi / 180)) / (math.tan(23.45 * math.pi / 180)) ), 3, )
-
-        else:
-            beta = 23.45 * math.sin((360 / 365) * math.pi / 180) * (n_year - 81)
-            beta_n = 90 - latitude + beta
-            self.spacing = round( MHeight * ( math.cos(tilt * math.pi / 180) + (math.sin(tilt * math.pi / 180)) / (math.tan(beta_n)) ), 3, )
-        return self.spacing
 
     #def __module_quantity(self, MLength, MHeight, PLength, PHeight, tilt):
     #    """

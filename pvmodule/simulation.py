@@ -3,7 +3,7 @@ class Simulation():
   #def __init__(self):
 
 
-  def simulate(self,module, inverter, location, ac_losses:float=0, dc_losses:bool=False, duration:int = 1, startyear:int = 2005, surface_tilt:float=35, surface_azimuth:float=0, wind:bool=True, download:bool=False, temp:bool=False, isolated_module:bool=False ):
+  def simulate(self,module, location,inverter=None, ac_losses:float=0, dc_losses:bool=False, duration:int = 1, startyear:int = 2005, surface_tilt:float=35, surface_azimuth:float=0, wind:bool=True, download:bool=False, temp:bool=False, isolated_module:bool=False ):
       """
       This method simulates the AC Power and DC Power a system would provide to the grid, using a provided module and a provided inverter (for AC Power). The efficiency for the inverter is calculated using the methos described here: https://www.nrel.gov/docs/fy15osti/64102.pdf
       
@@ -42,6 +42,12 @@ class Simulation():
      
       from pvmodule.pvgis import PVGIS
       from pvmodule.system import System
+      from pvmodule.inverter import Inverters
+
+      if inverter == None:
+        inverter = Inverters().auto_select_inverter(module)
+        if inverter == None:
+          return print('No inverter provided.')
 
       if startyear < 2005 or startyear > 2020:
         return print('Startyear must be between 2005 and 2020')
@@ -94,7 +100,7 @@ class Simulation():
 
       return ac_system , degradation_df
 
-  def simulate_vertical(self,module, inverter, location, ac_losses:float=0, dc_losses:bool=False, duration:int = 1, startyear:int = 2005, surface_tilt:float=90, surface_azimuth:float=90, wind:bool=True, download:bool=False, temp:bool=False, isolated_module:bool=False ):
+  def simulate_vertical(self,module, location, inverter=None, ac_losses:float=0, dc_losses:bool=False, duration:int = 1, startyear:int = 2005, surface_tilt:float=90, surface_azimuth:float=90, wind:bool=True, download:bool=False, temp:bool=False, isolated_module:bool=False ):
       """
       This method simulates the AC Power and DC Power a system would provide to the grid, using a provided module and a provided inverter (for AC Power). The efficiency for the inverter is calculated using the methos described here: https://www.nrel.gov/docs/fy15osti/64102.pdf
       
@@ -133,6 +139,13 @@ class Simulation():
      
       from pvmodule.pvgis import PVGIS
       from pvmodule.system import System
+      from pvmodule.inverter import Inverters
+
+      if inverter == None:
+        inverter = Inverters().auto_select_inverter(module)
+        if inverter == None:
+          return print('No inverter provided.')
+
 
       if startyear < 2005 or startyear > 2020:
         return print('Startyear must be between 2005 and 2020')
