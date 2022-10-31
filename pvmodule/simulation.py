@@ -46,7 +46,7 @@ class Simulation():
 
       if inverter == None:
         inverter = Inverters().auto_select_inverter(module)
-        if inverter == None:
+        if len(inverter) <= 0:
           return print('No inverter provided.')
 
       if startyear < 2005 or startyear > 2020:
@@ -143,7 +143,7 @@ class Simulation():
 
       if inverter == None:
         inverter = Inverters().auto_select_inverter(module)
-        if inverter == None:
+        if len(inverter) <= 0:
           return print('No inverter provided.')
 
 

@@ -80,6 +80,6 @@ class Inverters():
         inverter = inverter.drop(['efficiency'], axis=1)
         return  inverter.loc[[index]]
 
-      return  print('No inverter found.')
+      return None
 
 
