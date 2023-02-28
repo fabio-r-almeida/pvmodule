@@ -431,10 +431,10 @@ class Irradiance():
 
 
 
-data = Irradiance().irradiance(module, location, 35, 0.2)
+#data = Irradiance().irradiance(module, location, 35, 0.2)
 #print(location.get_info())
 #display(data.head(24))
 
 #data[['G_Front','G_Rear','Total_G']].max()
 
-data.to_csv("csv.csv")
+#data.to_csv("csv.csv")

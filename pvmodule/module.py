@@ -4,7 +4,7 @@ class Modules():
       self.url = 'https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/PV_Modules.csv'
 
 
-    def list_modules(self,wattage:int = None, BIPV:str = None):
+    def list_modules(self,wattage:int = None, BIPV:str = None, print_data = True):
       """
       List of modules.
       Parameters
@@ -26,13 +26,13 @@ class Modules():
 
       if BIPV != None:
         modules = modules.loc[modules['BIPV'] == str(BIPV)]
-      
+
 
       modules = modules.loc[modules['Short Side'] != str('nan')]
 
       from tabulate import tabulate
-
-      print(tabulate(modules, headers='keys', tablefmt='psql'))
+      if print_data:
+        print(tabulate(modules, headers='keys', tablefmt='psql'))
       return modules
 
     def module(self,model:str ,modules_per_string:int=1, number_of_strings:int=1,losses:float=0, first_year_degradation:float=2,annual_degradation:float=0.33, url: str='https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/PV_Modules.csv') -> dict:
@@ -43,7 +43,7 @@ class Modules():
 
       import pandas as pd
       module = pd.read_csv(self.url).replace(" ", "")
-    
+
       module = module.loc[module['Model Number'] == model]
       module = module.values.tolist()
 
@@ -85,5 +85,4 @@ class Modules():
             beta_n = 90 - latitude + delta
             self.spacing = round( module['height'] * ( math.cos(tilt * math.pi / 180) + (math.sin(tilt * math.pi / 180)) / (math.tan(beta_n * math.pi / 180)) ), 3, )
         return self.spacing
-      
-  
+

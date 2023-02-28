@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: pvmodule
-Version: 0.0.34
+Version: 0.0.48
 Summary: A library used to simulate photovoltaic energy production using PVGIS
 Home-page: UNKNOWN
 Author: Fábio Almeida
@@ -54,10 +54,10 @@ Description: # PV-Module
         >>> print(location.get_info())
         
         {
-         'Address': 'Lisboa, Portugal', 
-         'Latitude': 38.7077507, 
-         'Longitude': -9.1365919, 
-         'Elevation': 10.93380069732666, 
+         'Address': 'Lisboa, Portugal',
+         'Latitude': 38.7077507,
+         'Longitude': -9.1365919,
+         'Elevation': 10.93380069732666,
          'Timezone': 'Europe/Lisbon'
          }
         ```
@@ -125,18 +125,18 @@ Description: # PV-Module
         2 		ABB: PVI-3.0-OUTD-S-US-A [277V] 					277 	22.0466 	3000.0 		3106.85 	390.0 	-5.460000e-06 	-0.000033 	-0.000032 	-0.001180 	0.200000 	480.0 	7.96628 	100.0 		480.0 		10/15/2018 		N
         3 		ABB: PVI-3.0-OUTD-S-US-Z-A [208V] 					208 	18.1674 	3000.0 		3142.30 	310.0 	-8.040000e-06 	-0.000011 	0.000999 	-0.000287 	0.100000 	480.0 	10.13650 	100.0 		480.0 		10/15/2018 		N
         4 		ABB: PVI-3.0-OUTD-S-US-Z-A [240V] 					240 	16.8813 	3000.0 		3121.67 	340.0 	-5.700000e-06 	-0.000021 	0.000583 	-0.000712 	0.100000 	480.0 	9.18138 	100.0 		480.0 		10/15/2018 		N
-        ... 	... 												... 	... 		... 		... 		... 	... 			... 		... 	... 			... 		... 	... 		... 		... 		... 			...			
-        1415 	Yaskawa Solectria Solar: SGI 750XTM [380V] 			380 	3714.1400 	753200.0 	777216.00 	615.0 	-1.410000e-08 	0.000006 	0.001554 	-0.000272 	122.550000 	820.0 	1263.77000 	545.0 		820.0 		NaN 			N	
+        ... 	... 												... 	... 		... 		... 		... 	... 			... 		... 	... 			... 		... 	... 		... 		... 		... 			...
+        1415 	Yaskawa Solectria Solar: SGI 750XTM [380V] 			380 	3714.1400 	753200.0 	777216.00 	615.0 	-1.410000e-08 	0.000006 	0.001554 	-0.000272 	122.550000 	820.0 	1263.77000 	545.0 		820.0 		NaN 			N
         1416 	Yaskawa Solectria Solar: XGI 1500-125/125 [600V] 	600 	236.8650 	124618.0 	126553.00 	1050.0 	-4.580000e-08 	0.000012 	0.003275 	0.000547 	3.842105 	1250.0 	120.52600 	860.0 		1250.0 		7/21/2020 		N
         1417 	Yaskawa Solectria Solar: XGI 1500-125/150 [600V] 	600 	236.8650 	124618.0 	126553.00 	1050.0 	-4.580000e-08 	0.000012 	0.003275 	0.000547 	3.842105 	1250.0 	120.52600 	860.0 		1250.0 		7/21/2020 		N
         1418 	Yaskawa Solectria Solar: XGI 1500-150/166 [600V] 	600 	111.3230 	150000.0 	152458.00 	1100.0 	-3.140000e-08 	0.000014 	0.000113 	-0.000354 	2.750000 	1250.0 	138.59800 	860.0 		1250.0 		7/21/2020 		N
         1419 	Yaskawa Solectria Solar: XGI 1500-166/166 [600V] 	600 	253.1140 	165139.0 	167945.00 	1050.0 	-5.060000e-08 	0.000014 	0.003122 	0.000368 	3.842105 	1250.0 	159.94800 	860.0 		1250.0 		7/21/2020 		N
-         	
+        
         ```
         
         
         
-        # Sample Usages 
+        # Sample Usages
         ---
         
         ```python
@@ -149,10 +149,10 @@ Description: # PV-Module
         >>> print(location.get_info())
         
         {
-         'Address': 'Lisboa, Portugal', 
-         'Latitude': 38.7077507, 
-         'Longitude': -9.1365919, 
-         'Elevation': 10.93380069732666, 
+         'Address': 'Lisboa, Portugal',
+         'Latitude': 38.7077507,
+         'Longitude': -9.1365919,
+         'Elevation': 10.93380069732666,
          'Timezone': 'Europe/Lisbon'
          }
         
@@ -170,13 +170,13 @@ Description: # PV-Module
         
         >>> PVGIS = PVGIS()
         >>> input, output, meta = PVGIS.retrieve_hourly(
-                                                    latitude=location.latitude, 
+                                                    latitude=location.latitude,
                                                     longitude=location.longitude
                                                     )
         >>> print(output)
         
                              G(i)  H_sun    T2m  WS10m  Int
-        time                                               
+        time
         2005-01-01 00:10:00   0.0    0.0  11.29   3.86  0.0
         2005-01-01 01:10:00   0.0    0.0  11.19   4.14  0.0
         2005-01-01 02:10:00   0.0    0.0  11.08   4.07  0.0
@@ -203,14 +203,14 @@ Description: # PV-Module
         
         >>> PVGIS = PVGIS()
         >>> input, output, meta = PVGIS.retrieve_daily(
-                                                   latitude=location.latitude, 
+                                                   latitude=location.latitude,
                                                    longitude=location.longitude,
                                                    month=6
                                                    )
         >>> print(output)
         
                month    G(i)   Gb(i)   Gd(i)    T2m
-        time                                       
+        time
         00:00      6    0.00    0.00    0.00  17.49
         01:00      6    0.00    0.00    0.00  17.35
         02:00      6    0.00    0.00    0.00  17.21
@@ -304,8 +304,8 @@ Description: # PV-Module
         
         >>> from pvmodule.pvgis import PVGIS
         >>> input, output, metadata = PVGIS().retrieve_daily(
-                                                        location.latitude, 
-                                                        location.longitude, 
+                                                        location.latitude,
+                                                        location.longitude,
                                                         month=7
                                                         )
         
@@ -318,7 +318,7 @@ Description: # PV-Module
         >>> system_dc.plot()
         
                  DC Power    G(i)      V (U)     I (A)
-        time                                          
+        time
         00:00    0.000000    0.00   0.000000  0.000000
         01:00    0.000000    0.00   0.000000  0.000000
         02:00    0.000000    0.00   0.000000  0.000000
@@ -360,13 +360,13 @@ Description: # PV-Module
         >>> inverter_list = system.list_inverters()
         >>> inverter = system.select_inverter('ABB: PVI-3.0-OUTD-S-US-A [240V]')
         >>> system_ac = system.ac_production(module, output['T2m'], output['G(i)'], inverter)
-         
+        
         >>> print(system_ac)
         >>> import matplotlib.pyplot as plt
         >>> system_ac.plot()
         
                  AC Power    DC Power
-        time                         
+        time
         00:00    0.000000    0.000000
         01:00    0.000000    0.000000
         02:00    0.000000    0.000000
@@ -415,12 +415,12 @@ Description: # PV-Module
         >>> output = output[output.index.day == 7]
         
         >>> fig, ax1 = plt.subplots()
-         
+        
         >>> ax2 = ax1.twinx()
         >>> ax1.plot(output.index, output['AC Power'], 'g-')
         >>> ax2.plot(output.index, output['Wind Speed'], '*')
         >>> ax1.plot(output.index, output['DC Power'], 'r-')
-         
+        
         >>> ax1.set_xlabel('Time')
         >>> ax1.set_ylabel('AC/DC Power', color='r')
         >>> ax2.set_ylabel('Wind speed', color='b')
@@ -432,13 +432,24 @@ Description: # PV-Module
         ![alt text](https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/documentation/vertical_ac_dc_documentation.png)
         
         
-        
+        ## TODO
+        ---
+        - Extrapolate the 1hour data into 5minute data.
+        - Create better visualization graph
+        - Create annual heatmap
         
         
         ## Versions
         ---
         
         All notable changes to this project will be documented in this file.
+        
+        ### [0.0.35] to [0.0.43] - 2023-02-28
+        ### Removed
+        - Added reverse Geolocalization using coordinates to determine the address.
+        - Removed Timezone from Location class due to unknown issues.
+        - Bug fixing.
+        
         
         ### [0.0.34] - 2023-01-31
         ### Added
@@ -465,7 +476,7 @@ Description: # PV-Module
         ## Copyright
         ---
         
-        Copyright (c), 202, Fabio Ramalho de Almeida
+        Copyright (c), 2023, Fabio Ramalho de Almeida
         
         Permission is hereby granted, free of charge, to any person obtaining a copy
         of this software and associated documentation files (the "Software"), to deal
@@ -485,7 +496,7 @@ Description: # PV-Module
         OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
         SOFTWARE.
         
-Keywords: python,PVGIS,simulator,photovoltaic,solar energy,solar panels,solar simulation
+Keywords: Python,PVGIS,Simulator,Photovoltaic,Solar energy,Solar panels,Solar simulation
 Platform: UNKNOWN
 Classifier: Development Status :: 1 - Planning
 Classifier: Intended Audience :: Developers

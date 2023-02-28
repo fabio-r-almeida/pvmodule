@@ -8,7 +8,7 @@ class Location():
         self.timezone = None  # timezone
         self.name = None  # name
 
-    def set_location(self, city: str, latitude: float = None, longitude: float = None, elevation: float = None, timezone: str = None, name: str = None, ) -> object:
+    def set_location(self, city: str= None, latitude: float = None, longitude: float = None, elevation: float = None, timezone: str = None, name: str = None, ) -> object:
         """
         Using the city name, this method will geolocate its coordinates, elevation, timezone.
         To use costum locations, just input the desired parameters and they will overwrite the geolocation.
@@ -30,7 +30,7 @@ class Location():
           The name of the system. This does not affect anything.
         """
 
-        from tzwhere import tzwhere
+        #from tzwhere import tzwhere
         import requests
         from geopy.geocoders import Nominatim
         import numpy as np
@@ -42,39 +42,64 @@ class Location():
         self.latitude = latitude
         self.longitude = longitude
         self.elevation = elevation
-        self.timezone = timezone
+        #self.timezone = timezone
         self.name = name
 
-        geolocator = Nominatim(user_agent="fabio_almeida_thesis")
-        location = geolocator.geocode(str(self.city))
-        if self.latitude == None:
-            self.latitude = location.latitude
-        if self.longitude == None:
-            self.longitude = location.longitude
-        if self.timezone == None:
-            self.timezone = tzwhere.tzwhere().tzNameAt(self.latitude, self.longitude)
-        if self.name == None:
-            self.name = location.address
-        if self.elevation == None:
-            url = "https://api.opentopodata.org/v1/eudem25m?"
-            params = {"locations": f"{self.latitude},{self.longitude}"}
-            result = requests.get(url, params)
-            if result.ok:
-                self.elevation = result.json()["results"][0]["elevation"]
-            else:
-                url = "https://api.open-elevation.com/api/v1/lookup?"
-                params = {"locations": f"{self.latitude},{self.longitude}"}
-                result = requests.get(url, params)
-                self.elevation = result.json()["results"][0]["elevation"]
-
+        if city != None:
+          geolocator = Nominatim(user_agent="fabio_almeida_thesis")
+          location = geolocator.geocode(str(city))
+          if self.latitude == None:
+              self.latitude = location.latitude
+          if self.longitude == None:
+              self.longitude = location.longitude
+          #if self.timezone == None:
+          #    self.timezone = tzwhere.tzwhere().tzNameAt(location.latitude, location.longitude)
+          if self.name == None:
+              self.name = location.address
+          if self.elevation == None:
+              url = "https://api.opentopodata.org/v1/eudem25m?"
+              params = {"locations": f"{location.latitude},{location.longitude}"}
+              result = requests.get(url, params)
+              if result.ok:
+                  self.elevation = result.json()["results"][0]["elevation"]
+              else:
+                  url = "https://api.open-elevation.com/api/v1/lookup?"
+                  params = {"locations": f"{location.latitude},{location.longitude}"}
+                  result = requests.get(url, params)
+                  self.elevation = result.json()["results"][0]["elevation"]
+        else:
+          geolocator = Nominatim(user_agent="fabio_almeida_thesis")
+          latitude_longitude =  str(latitude)+","+  str(longitude)
+          location = geolocator.reverse(str(latitude_longitude))
+          self.city = str(location.address)
+          location = geolocator.geocode(str(location.address))
+          if self.latitude == None:
+              self.latitude = location.latitude
+          if self.longitude == None:
+              self.longitude = location.longitude
+          #if self.timezone == None:
+          #    self.timezone = tzwhere.tzwhere().tzNameAt(location.latitude, location.longitude)
+          if self.name == None:
+              self.name = location.address
+          if self.elevation == None:
+              url = "https://api.opentopodata.org/v1/eudem25m?"
+              params = {"locations": f"{location.latitude},{location.longitude}"}
+              result = requests.get(url, params)
+              if result.ok:
+                  self.elevation = result.json()["results"][0]["elevation"]
+              else:
+                  url = "https://api.open-elevation.com/api/v1/lookup?"
+                  params = {"locations": f"{location.latitude},{location.longitude}"}
+                  result = requests.get(url, params)
+                  self.elevation = result.json()["results"][0]["elevation"]
         return self
 
-    def get_info(location):
+    def get_info(self, location):
 
       return {
           'Address':location.name,
           'Latitude':location.latitude,
           'Longitude':location.longitude,
-          'Elevation':location.elevation,
-          'Timezone':location.timezone,
+          'Elevation':location.elevation
+          #'Timezone':location.timezone
           }
