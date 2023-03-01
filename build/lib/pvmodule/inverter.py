@@ -12,12 +12,12 @@ class Inverters():
       Parameters
       ----------
       name : str
-          The name of the inverter, as listed on the list.
+          The Model Number of the inverter, as listed on the list.
       """
       import pandas as pd
       inverters = pd.read_csv(self.url).replace(" ", "")
 
-      return inverters.loc[inverters['Name'] == name]
+      return inverters.loc[inverters['Model Number'] == name]
 
     def list_inverters(self,vac:int=None, pmax:int=None,print_list:bool=False):
       """
@@ -67,7 +67,7 @@ class Inverters():
       inverter_list = inverter_list.loc[inverter_list['Idcmax'] >= Idcmax]
 
       inverter = pd.DataFrame(inverter_list)
-      
+
 
       Pdc_max = inverter['Paco']
       Pdco = inverter['Pdco']
