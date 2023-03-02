@@ -1,7 +1,7 @@
 #@title FINAL (TESE) Inverters class { display-mode: "form" }
 class Inverters():
-    def __init__(self, url:str='https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/CEC_Inverters.csv'):
-      self.url = 'https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/CEC_Inverters.csv'
+    def __init__(self, url:str='https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/CEC_Inverters_2.csv'):
+      self.url = 'https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/CEC_Inverters_2.csv'
 
     def inverter(self,name):
       """
@@ -24,7 +24,7 @@ class Inverters():
       List of inverters provided by CEC.
       Parameters
       ----------
-      url : str, default = 'https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/CEC_Inverters.csv'
+      url : str, default = 'https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/CEC_Inverters_2.csv'
           Url to the list of inverters. Can also be a .csv file.
       vac : str, default = None
         Filters the results that are equal to the AC voltage output
@@ -78,7 +78,8 @@ class Inverters():
       if len(inverter) > 0:
         inverter = inverter.sort_values(by='Maximum Continuous Output Power (kW)', ascending=True)
         inverter = inverter.drop( inverter.index.to_list()[1:] ,axis = 0 )
-        return  inverter
+
+        return  inverter.iloc[0]
 
       return pd.DataFrame()
 
