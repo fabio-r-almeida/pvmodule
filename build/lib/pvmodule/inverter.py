@@ -78,7 +78,8 @@ class Inverters():
       if len(inverter) > 0:
         inverter = inverter.sort_values(by='Maximum Continuous Output Power (kW)', ascending=True)
         inverter = inverter.drop( inverter.index.to_list()[1:] ,axis = 0 )
-        return  inverter
+
+        return  inverter.iloc[0]
 
       return pd.DataFrame()
 
