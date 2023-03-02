@@ -1,4 +1,4 @@
-#@title PVGIS class { display-mode: "form" }
+#@title PVGIS (TESE) class { display-mode: "form" }
 class PVGIS():
     """
     PVGIS class retrieves real-world data from the PVGIS-API.
@@ -171,14 +171,16 @@ class PVGIS():
 
             meta = data["meta"]
         except:
-            return print(f"Error: {data}")
+            print(f"Error: {data}")
+            erro = f"Error: {data}"
+            return erro
 
         self.data = inputs, outputs, meta
 
         if(outputs['T2m'].mean() == 0 or outputs['WS10m'].mean() == 0):
           if 'v5_2' in self.url:
             return PVGIS().retrieve_hourly(self.latitude, self.longitude, self.usehorizon, self.userhorizon, self.raddatabase, self.startyear, self.endyear, self.pvcalculation, self.peakpower, self.pvtechchoice, self.mountingplace, self.loss, self.trackingtype, self.surface_tilt, self.surface_azimuth, self.optimalinclination, self.optimalangles, self.components, self.outputformat, url = "http://re.jrc.ec.europa.eu/api/v5_1/")
-             
+
         return self.data
 
     def retrieve_monthly(self, latitude: float, longitude: float, usehorizon: int = 1, userhorizon: int = None, raddatabase: str = None, startyear: int = None, endyear: int = None, horirrad: int = 1, optrad: int = 0, selectrad: int = 0, angle: int = 0, mr_dni: int = 1, d2g: int = 1, avtemp: int = 1, outputformat: str = "json", url: str = "http://re.jrc.ec.europa.eu/api/v5_2/", ) -> object:
@@ -284,7 +286,9 @@ class PVGIS():
 
             meta = data["meta"]
         except:
-            return print(f"Error: {data}")
+            print(f"Error: {data}")
+            erro = f"Error: {data}"
+            return erro
 
         self.data = inputs, outputs, meta
 
@@ -300,7 +304,7 @@ class PVGIS():
 
         Parameters
         ----------
-        latitude: float, 
+        latitude: float,
           Latitude, in decimal degrees, south is negative.
         longitude: float
           Longitude, in decimal degrees, west is negative.
@@ -398,13 +402,15 @@ class PVGIS():
             meta = data["meta"]
 
         except:
-            return print(f"Error: {data}")
+            print(f"Error: {data}")
+            erro = f"Error: {data}"
+            return erro
 
-        
+
         input_tmy, output_tmy, metadata_tmy = PVGIS().retrieve_tmy(latitude,longitude)
 
         output_tmy = output_tmy[output_tmy.index.month == self.month]
-        
+
         df = pd.DataFrame()
         df = pd.DataFrame(index=outputs.index)
         wind_speed = []
@@ -417,17 +423,17 @@ class PVGIS():
         if(outputs['T2m'].mean() == 0 or outputs['WS10m'].mean() == 0):
           if 'v5_2' in self.url:
             return PVGIS().retrieve_daily(self.latitude, self.longitude, self.month, self.usehorizon, self.userhorizon, self.raddatabase, self.angle, self.aspect, self.global_irr, self.glob_2axis, self.clearsky, self.clearsky_2axis, self.showtemperatures, self.localtime, self.outputformat, url= "http://re.jrc.ec.europa.eu/api/v5_1/", )
-       
+
         self.data = inputs, outputs, meta
         return self.data
 
-    def retrieve_tmy(self, latitude: float, 
-                     longitude: float, 
-                     usehorizon: int = 1, 
-                     userhorizon: int = None, 
-                     startyear: int = None, 
-                     endyear: int = None, 
-                     outputformat: str = "json", 
+    def retrieve_tmy(self, latitude: float,
+                     longitude: float,
+                     usehorizon: int = 1,
+                     userhorizon: int = None,
+                     startyear: int = None,
+                     endyear: int = None,
+                     outputformat: str = "json",
                      url: str = "http://re.jrc.ec.europa.eu/api/v5_2/", ) -> object:
         """
         Daily Data: This method retrieves real-world data using the PVGIS-API.
@@ -438,7 +444,7 @@ class PVGIS():
 
         Parameters
         ----------
-        latitude: float, 
+        latitude: float,
           Latitude, in decimal degrees, south is negative.
         longitude: float
           Longitude, in decimal degrees, west is negative.
@@ -501,7 +507,8 @@ class PVGIS():
             meta = data["meta"]
 
         except:
-            return print(f"Error: {data}")
+            print(f"Error : {data}")
+            return data
 
         self.data = inputs, outputs, meta
         return self.data

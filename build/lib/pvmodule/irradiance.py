@@ -15,14 +15,14 @@ class Irradiance():
       panel_tilt: float
           The angle in degrees of the modules has with the horizon
       azimuth: float
-          The angle the module has with South (South=0º, North = 180º, West = +90º and East = -90º)    
+          The angle the module has with South (South=0º, North = 180º, West = +90º and East = -90º)
       """
 
     import math
     from datetime import datetime, date, timedelta
     import pandas as pd
     import numpy as np
-
+    from pvmodule import PVGIS
 
     #params
 
@@ -47,7 +47,7 @@ class Irradiance():
                            'WD10m':'10m wind direction',
                            'SP':'Air pressure',
                           }, inplace = True)
-  
+
 
 
     data['Time_H'] = data.index.strftime("%H").astype(float)
@@ -59,11 +59,11 @@ class Irradiance():
 
     omega = 0.25*(data['Time_H']*60+data['Time_M']+data['Time_S']/60-12*60)
     data['Hour angle'] = omega
-    
+
     psi = np.arccos(math.sin(np.deg2rad(location.latitude))*np.sin(np.deg2rad(data['Declination']))+math.cos(np.deg2rad(location.latitude))*np.cos(np.deg2rad(data['Declination']))*np.cos(np.deg2rad(omega)))*180/math.pi
 
     cos_psi = math.sin(np.deg2rad(location.latitude))*np.sin(np.deg2rad(data['Declination']))+math.cos(np.deg2rad(location.latitude))*np.cos(np.deg2rad(data['Declination']))*np.cos(np.deg2rad(omega))
-    
+
     Zs = azimuth
 
     lat_rad = np.deg2rad(location.latitude)
@@ -75,7 +75,7 @@ class Irradiance():
     cos_phi = np.sin(lat_rad)*np.sin(declination_rad)*np.cos(panel_tilt_rad) - np.cos(lat_rad)*np.sin(declination_rad)*np.sin(panel_tilt_rad)*np.cos(Zs_rad) +\
               np.cos(lat_rad)*np.cos(declination_rad)*np.cos(Hour_angle_rad)*np.cos(panel_tilt_rad) +\
               np.sin(lat_rad)*np.cos(declination_rad)*np.cos(Hour_angle_rad)*np.sin(panel_tilt_rad)*np.cos(Zs_rad) +\
-              np.cos(declination_rad)*np.sin(Hour_angle_rad)*np.sin(panel_tilt_rad)*np.sin(Zs_rad) 
+              np.cos(declination_rad)*np.sin(Hour_angle_rad)*np.sin(panel_tilt_rad)*np.sin(Zs_rad)
 
 
     data['Rb_front'] = abs(np.where( ((azimuth - 90) <= data['Hour angle']) & (data['Hour angle'] <= (azimuth + 90)), cos_phi/cos_psi, 0))
@@ -85,6 +85,7 @@ class Irradiance():
     data['DOY'] = DOY
     data['Solar Zenith angle'] = psi
     data = data.drop(['Time_H', 'Time_M','Time_S'], axis=1)
+
     return data
 
 
@@ -97,14 +98,14 @@ class Irradiance():
 
 
 
-  def irradiance(self, module, location, panel_tilt:float, albedo:float, azimuth:float = 0, Elevation=2, panel_distance:float = None):
+  def irradiance(self, module, location, panel_tilt:float=35, albedo:float=0.2, azimuth:float = 0, Elevation=2, panel_distance:float = None):
 
     data = Irradiance()._get_TMY(location, panel_tilt, azimuth)
-    
+
 
     if panel_distance == None:
       panel_distance = Irradiance()._modules_spacing(module, panel_tilt, data['DOY'], location.latitude)
-   
+
     GF_beam = Irradiance()._GF_beam(data)
     GF_diffuse =  Irradiance()._GF_diffuse(data, module, panel_distance, panel_tilt)
     GF_reflected = Irradiance()._GF_reflected(data, albedo, module, panel_distance, panel_tilt, azimuth,Elevation)
@@ -114,17 +115,17 @@ class Irradiance():
     if module['BIPV'] == 'N' :
       data['Total_G'] = G_front
       return data
-    
+
 
     GR_beam = Irradiance()._GR_beam(data)
     GR_diffuse =  Irradiance()._GR_diffuse(data, module, panel_distance, panel_tilt)
     GR_reflected = Irradiance()._GR_reflected(data, albedo, module, panel_distance, panel_tilt, azimuth,Elevation)
- 
+
     G_Rear = GR_beam + GR_diffuse + GR_reflected
-    data['G_Rear'] = G_Rear 
+    data['G_Rear'] = G_Rear
     data['Total_G'] = G_Rear + G_front
 
-    return data 
+    return data
 
 
 
@@ -144,7 +145,7 @@ class Irradiance():
     beta = panel_tilt
     miu = beta
     D = panel_distance
-    
+
     VF_Module2Sky = H + math.sqrt((A*math.sin(miu*math.pi/180) - H*math.sin(beta*math.pi/180))**2 + (D+H*math.cos(beta*math.pi/180))**2)-math.sqrt((A*math.sin(miu*math.pi/180))**2+D**2)
     VF_Module2Sky = VF_Module2Sky/(2*H)
 
@@ -173,18 +174,18 @@ class Irradiance():
     Solar_Zenith_angle_rad = np.deg2rad(data['Solar Zenith angle']) # 0z em rad
     solar_altitude_rad = 90*np.pi/180-np.arcsin(np.cos(Solar_Zenith_angle_rad)) # solar_altitude em rad
 
-    
 
-    Shadow = np.tan(solar_altitude_rad)*(E + np.sin(beta*np.pi/180)*H) + np.cos(beta*np.pi/180)*H-np.tan(solar_altitude_rad)*E 
+
+    Shadow = np.tan(solar_altitude_rad)*(E + np.sin(beta*np.pi/180)*H) + np.cos(beta*np.pi/180)*H-np.tan(solar_altitude_rad)*E
 
     S = np.where( (data['GHI'] > 0 )|( data['DHI'] > 0 )| (data['DNI']> 0), Shadow, 0)
 
-    
+
     S = pd.DataFrame(S, columns = ['Shadow'] , index=data.index)
 
     L1 = A * np.cos(miu*np.pi/180) + D - S
     L2 = np.sqrt((A*np.cos(miu*np.pi/180)+D-S+H*np.cos(beta*np.pi/180))**2+(H*np.sin(beta*np.pi/180))**2)
-    
+
     VF_Module2usGround = ( H + L1 - L2 ) / (2*H)
 
     return VF_Module2usGround
@@ -210,13 +211,13 @@ class Irradiance():
     Solar_Zenith_angle_rad = np.deg2rad(data['Solar Zenith angle']) # 0z em rad
     solar_altitude_rad = 90*np.pi/180-np.arcsin(np.cos(Solar_Zenith_angle_rad)) # solar_altitude em rad
 
-    
 
-    Shadow = np.tan(solar_altitude_rad)*(E + np.sin(beta*np.pi/180)*H) + np.cos(beta*np.pi/180)*H-np.tan(solar_altitude_rad)*E 
+
+    Shadow = np.tan(solar_altitude_rad)*(E + np.sin(beta*np.pi/180)*H) + np.cos(beta*np.pi/180)*H-np.tan(solar_altitude_rad)*E
 
     S = np.where( (data['GHI'] > 0 )|( data['DHI'] > 0 )| (data['DNI']> 0), Shadow, 0)
 
-    
+
     S = pd.DataFrame(S, columns = ['Shadow'], index=data.index)
 
     L2 = np.sqrt((A*np.cos(miu*np.pi/180)+D-S+H*np.cos(beta*np.pi/180))**2+(H*np.sin(beta*np.pi/180))**2)
@@ -231,7 +232,7 @@ class Irradiance():
 
   def _GF_beam(self, data):
 
-    GF_beam = (data['GHI'] - data['DHI']) * data['Rb_front']   
+    GF_beam = (data['GHI'] - data['DHI']) * data['Rb_front']
 
     return GF_beam
 
@@ -248,9 +249,9 @@ class Irradiance():
     #VF_Module2usGround - unshaded ground
 
     VF_Module2Ground = Irradiance()._VF_front_Module2sGround(data, module, panel_distance, panel_tilt,azimuth,Elevation) + Irradiance()._VF_front_Module2usGround(data, module, panel_distance, panel_tilt,azimuth,Elevation)
-    
+
     GF_reflected = data['GHI']*albedo*VF_Module2Ground['Shadow']
- 
+
     return GF_reflected
 
 
@@ -298,9 +299,9 @@ class Irradiance():
     Solar_Zenith_angle_rad = np.deg2rad(data['Solar Zenith angle']) # 0z em rad
     solar_altitude_rad = 90*np.pi/180-np.arcsin(np.cos(Solar_Zenith_angle_rad)) # solar_altitude em rad
 
-    
 
-    Shadow = np.tan(solar_altitude_rad)*(E + np.sin(beta*np.pi/180)*H) + np.cos(beta*np.pi/180)*H-np.tan(solar_altitude_rad)*E 
+
+    Shadow = np.tan(solar_altitude_rad)*(E + np.sin(beta*np.pi/180)*H) + np.cos(beta*np.pi/180)*H-np.tan(solar_altitude_rad)*E
 
     S = np.where( (data['GHI'] > 0 )|( data['DHI'] > 0 )| (data['DNI']> 0), Shadow, 0)
 
@@ -338,28 +339,28 @@ class Irradiance():
     Solar_Zenith_angle_rad = np.deg2rad(data['Solar Zenith angle']) # 0z em rad
     solar_altitude_rad = 90*np.pi/180-np.arcsin(np.cos(Solar_Zenith_angle_rad)) # solar_altitude em rad
 
-    
 
-    Shadow = np.tan(solar_altitude_rad)*(E + np.sin(beta*np.pi/180)*H) + np.cos(beta*np.pi/180)*H-np.tan(solar_altitude_rad)*E 
+
+    Shadow = np.tan(solar_altitude_rad)*(E + np.sin(beta*np.pi/180)*H) + np.cos(beta*np.pi/180)*H-np.tan(solar_altitude_rad)*E
 
     S = np.where( (data['GHI'] > 0 )|( data['DHI'] > 0 )| (data['DNI']> 0), Shadow, 0)
 
-    
+
     S = pd.DataFrame(S, columns = ['Shadow'], index=data.index)
 
     L8 = np.sqrt((S - A*np.sin(miu*np.pi/180))**2 + (A*np.sin(miu*np.pi/180))**2)
 
-    _VF_Module2sGround = (A + S - L8) / (2 * A) 
+    _VF_Module2sGround = (A + S - L8) / (2 * A)
 
     return _VF_Module2sGround
 
-  
+
 
 
 
   def _GR_beam(self, data):
 
-    GR_beam = (data['GHI'] - data['DHI']) * data['Rb_rear']  
+    GR_beam = (data['GHI'] - data['DHI']) * data['Rb_rear']
 
     return GR_beam
 
@@ -385,13 +386,13 @@ class Irradiance():
 
 
     VF_Module2Ground = Irradiance()._VF_front_Module2sGround(data, module, panel_distance, panel_tilt,azimuth,Elevation) + Irradiance()._VF_front_Module2usGround(data, module, panel_distance, panel_tilt,azimuth,Elevation)
-    
+
     GF_reflected = data['GHI']*albedo*VF_Module2Ground['Shadow']
 
 
 
 
-#  
+#
 #Auxiliry methods:
 #
 
@@ -417,7 +418,7 @@ class Irradiance():
             delta = 23.45 * np.sin(((360 / 365) * np.pi / 180) * (n_year+284))
             beta_n = 90 - latitude + delta
             spacing = round( float(module['height']) * ( np.cos(tilt * np.pi / 180) + (np.sin(tilt * np.pi / 180)) / (np.tan(beta_n * np.pi / 180)) ), 3, )
-      
+
         return max(spacing)
 
   def list_albedo(self):
