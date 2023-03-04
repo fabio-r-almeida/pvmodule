@@ -38,6 +38,8 @@ class Irradiance():
 
     inputs ,data, metadata = PVGIS().retrieve_tmy(location.latitude,location.longitude)
 
+
+
     data.rename(columns = {'G(h)':'GHI',
                            'Gd(h)':'DHI',
                            'Gb(n)':'DNI',
@@ -48,16 +50,29 @@ class Irradiance():
                            'SP':'Air pressure',
                           }, inplace = True)
 
-
-
+  
     data['Time_H'] = data.index.strftime("%H").astype(float)
     data['Time_M'] = data.index.strftime("%M").astype(float)
     data['Time_S'] = data.index.strftime("%S").astype(float)
+
+    new_index = data.index.map(lambda t: t.replace(year=2023))
+    data=data.set_index(new_index)
+
+
+
+
+    df_both = pd.date_range("2030-01-01 00:00:00", "2030-12-31 23:00:00", freq='5T').to_frame()
+    df_both = df_both.drop([0], axis=1)
+    df_both = df_both.merge(data, left_index=True, right_index=True, how='left')
+    data = df_both.interpolate(method='spline', order=2)
+
 
     DOY =  pd.DatetimeIndex(data.index.values).day_of_year
     data['Declination'] = (23.45*np.sin(np.deg2rad((360/365)*(284+DOY)))).values
 
     omega = 0.25*(data['Time_H']*60+data['Time_M']+data['Time_S']/60-12*60)
+    data = data.drop(['Time_H', 'Time_M','Time_S'], axis=1)
+
     data['Hour angle'] = omega
 
     psi = np.arccos(math.sin(np.deg2rad(location.latitude))*np.sin(np.deg2rad(data['Declination']))+math.cos(np.deg2rad(location.latitude))*np.cos(np.deg2rad(data['Declination']))*np.cos(np.deg2rad(omega)))*180/math.pi
@@ -85,11 +100,13 @@ class Irradiance():
 
     cols = ['Rb_front', 'Rb_rear']
     data[cols] = data[cols].clip(upper=1)
+    
+    data[['GHI', 'DHI','DNI']] = data[['GHI', 'DHI','DNI']].clip(lower=0)
 
 
     data['DOY'] = DOY
     data['Solar Zenith angle'] = psi
-    data = data.drop(['Time_H', 'Time_M','Time_S'], axis=1)
+    
 
     return inputs ,data, metadata
 

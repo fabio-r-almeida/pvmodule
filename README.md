@@ -426,9 +426,9 @@ time
 
 ## TODO
 ---
-- Extrapolate the 1hour data into 5minute data.
 - Create better visualization graph
 - Create annual heatmap
+- ~~Extrapolate the 1hour data into 5minute data.~~
 
 
 ## Versions
@@ -436,26 +436,39 @@ time
 
 All notable changes to this project will be documented in this file.
 
+### [0.0.62] to [0.0.63] - 2023-03-04
+### Added
+- Added a second order spline in order to smoothen out the values from PVGIS.
+- Changed the timeframe from 1 hour to 5 minutes.
+- Change TMY dates for future 2030 dates.
+
+
+
 ### [0.0.44] to [0.0.61] - 2023-03-04
-### Removed
+### Fixed
 - Solved issue where Irradiance calculations could be divided by zero and thus creating unlimited irradiance reaching the PV modules.
 - Updated the CEC_Inverters database by adding: 
   - Short circuit currents per inverter;
   - Number of MPPT strings per inverter.
 - Bug fixing.
 
+
 ### [0.0.35] to [0.0.43] - 2023-02-28
-### Removed
+### Added
 - Added reverse Geolocalization using coordinates to determine the address.
-- Removed Timezone from Location class due to unknown issues.
+### Fixed
 - Bug fixing.
+### Removed
+- Removed Timezone from Location class due to unknown issues.
 
 
 ### [0.0.34] - 2023-01-31
 ### Added
 - Added new class to calculare front and rear irradiance.
-- Resolved minor bugs.
+### Fixed
 - Corrected/updated formulas to calculate spacing between modules.
+- Resolved minor bugs.
+
 
 
 
