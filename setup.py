@@ -4,7 +4,7 @@ try:
     long_description = pypandoc.convert_file('README.md', 'rst')
 except(IOError, ImportError):
     long_description = open('README.md').read()
-VERSION = '0.0.60'
+VERSION = '0.0.62'
 DESCRIPTION = 'A library used to simulate photovoltaic energy production using PVGIS'
 # Setting up
 setup(
@@ -16,7 +16,7 @@ setup(
     long_description_content_type="text/markdown",
     long_description=long_description,
     packages=find_packages(),
-    install_requires=['requests', 'pandas', 'tzwhere','geopy','numpy','tabulate','datetime'],
+    install_requires=['requests', 'pandas','geopy','numpy','tabulate','datetime'],
     keywords=['Python', 'PVGIS', 'Simulator', 'Photovoltaic', 'Solar energy', 'Solar panels','Solar simulation'],
     classifiers=[
         "Development Status :: 1 - Planning",

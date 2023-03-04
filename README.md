@@ -436,6 +436,14 @@ time
 
 All notable changes to this project will be documented in this file.
 
+### [0.0.44] to [0.0.61] - 2023-03-04
+### Removed
+- Solved issue where Irradiance calculations could be divided by zero and thus creating unlimited irradiance reaching the PV modules.
+- Updated the CEC_Inverters database by adding: 
+  - Short circuit currents per inverter;
+  - Number of MPPT strings per inverter.
+- Bug fixing.
+
 ### [0.0.35] to [0.0.43] - 2023-02-28
 ### Removed
 - Added reverse Geolocalization using coordinates to determine the address.

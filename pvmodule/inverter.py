@@ -57,7 +57,7 @@ class Inverters():
       number_of_modules = module['modules_per_string'] * module['number_of_strings']
       Max_Input_DC_Power = number_of_modules * module['pdc'] / 1000
       Vdcmax = module['modules_per_string'] * module['uoc']
-      Idcmax =  module['number_of_strings'] * module['isc']
+      Idcmax = module['isc']
 
       inverter_list = Inverters().list_inverters(print_list=False)
 
@@ -67,7 +67,11 @@ class Inverters():
       inverter_list = inverter_list.loc[inverter_list['Maximum Continuous Output Power (kW)'] >= Max_Input_DC_Power]
       inverter_list = inverter_list.loc[inverter_list['Voltage Maximum (Vdc)'] >= Vdcmax] #MAX MPPT
       inverter_list = inverter_list.loc[inverter_list['Voltage Minimum (Vdc)'] <= Vdcmax] #MIN MPPT
-      #inverter_list = inverter_list.loc[inverter_list['Idcmax'] >= Idcmax]   
+      inverter_list = inverter_list.loc[inverter_list['Max strings input'] <= module['number_of_strings']]
+      inverter_list = inverter_list.loc[inverter_list['Maximum Short Circuit Current / String'] >= Idcmax] 
+
+      
+
 
       inverter = pd.DataFrame(inverter_list)
       inverter['efficiency'] = inverter['Weighted Efficiency (%)']
@@ -76,10 +80,10 @@ class Inverters():
       inverter = inverter.sort_values(by='Maximum Continuous Output Power (kW)', ascending=True)
 
       if len(inverter) > 0:
-        inverter = inverter.sort_values(by='Maximum Continuous Output Power (kW)', ascending=True)
         inverter = inverter.drop( inverter.index.to_list()[1:] ,axis = 0 )
+        print(inverter)
 
-        return  inverter.iloc[0]
+        return  inverter
 
       return pd.DataFrame()
 

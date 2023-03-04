@@ -82,6 +82,11 @@ class Irradiance():
     data['Rb_rear'] = abs(np.where( (data['Hour angle']< (azimuth - 90)) | (data['Hour angle'] > (azimuth + 90)), cos_phi/cos_psi, 0))
 
 
+
+    cols = ['Rb_front', 'Rb_rear']
+    data[cols] = data[cols].clip(upper=1)
+
+
     data['DOY'] = DOY
     data['Solar Zenith angle'] = psi
     data = data.drop(['Time_H', 'Time_M','Time_S'], axis=1)
@@ -431,11 +436,11 @@ class Irradiance():
     return albedo_list
 
 
+#location = Location().set_location("Oeiras")
+#module = Modules().module('6MN6A270')
 
-#data = Irradiance().irradiance(module, location, 35, 0.2)
-#print(location.get_info())
+#_,data,_ = Irradiance().irradiance(module, location, 35, 0.2)
+
 #display(data.head(24))
-
 #data[['G_Front','G_Rear','Total_G']].max()
-
 #data.to_csv("csv.csv")
