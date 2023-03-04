@@ -36,7 +36,7 @@ class Irradiance():
     #WD10m: 10-m wind direction (0 = N
     #SP: Surface (air) pressure (Pa)
 
-    _,data,_ = PVGIS().retrieve_tmy(location.latitude,location.longitude)
+    inputs ,data, metadata = PVGIS().retrieve_tmy(location.latitude,location.longitude)
 
     data.rename(columns = {'G(h)':'GHI',
                            'Gd(h)':'DHI',
@@ -86,7 +86,7 @@ class Irradiance():
     data['Solar Zenith angle'] = psi
     data = data.drop(['Time_H', 'Time_M','Time_S'], axis=1)
 
-    return data
+    return inputs ,data, metadata
 
 
 
@@ -100,7 +100,7 @@ class Irradiance():
 
   def irradiance(self, module, location, panel_tilt:float=35, albedo:float=0.2, azimuth:float = 0, Elevation=2, panel_distance:float = None):
 
-    data = Irradiance()._get_TMY(location, panel_tilt, azimuth)
+    inputs ,data, metadata = Irradiance()._get_TMY(location, panel_tilt, azimuth)
 
 
     if panel_distance == None:
@@ -114,7 +114,7 @@ class Irradiance():
 
     if module['BIPV'] == 'N' :
       data['Total_G'] = G_front
-      return data
+      return inputs ,data, metadata
 
 
     GR_beam = Irradiance()._GR_beam(data)
@@ -125,7 +125,7 @@ class Irradiance():
     data['G_Rear'] = G_Rear
     data['Total_G'] = G_Rear + G_front
 
-    return data
+    return inputs ,data, metadata
 
 
 
