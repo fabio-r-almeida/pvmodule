@@ -436,7 +436,7 @@ time
 
 All notable changes to this project will be documented in this file.
 
-### [0.0.62] to [0.0.63] - 2023-03-04
+### [0.0.62] to [0.0.65] - 2023-03-04
 ### Added
 - Added a second order spline in order to smoothen out the values from PVGIS.
 - Changed the timeframe from 1 hour to 5 minutes.

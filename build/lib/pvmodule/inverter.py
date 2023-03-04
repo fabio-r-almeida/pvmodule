@@ -81,7 +81,6 @@ class Inverters():
 
       if len(inverter) > 0:
         inverter = inverter.drop( inverter.index.to_list()[1:] ,axis = 0 )
-        print(inverter)
 
         return  inverter
 

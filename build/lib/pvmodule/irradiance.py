@@ -55,7 +55,7 @@ class Irradiance():
     data['Time_M'] = data.index.strftime("%M").astype(float)
     data['Time_S'] = data.index.strftime("%S").astype(float)
 
-    new_index = data.index.map(lambda t: t.replace(year=2023))
+    new_index = data.index.map(lambda t: t.replace(year=2030))
     data=data.set_index(new_index)
 
 
@@ -64,7 +64,7 @@ class Irradiance():
     df_both = pd.date_range("2030-01-01 00:00:00", "2030-12-31 23:00:00", freq='5T').to_frame()
     df_both = df_both.drop([0], axis=1)
     df_both = df_both.merge(data, left_index=True, right_index=True, how='left')
-    data = df_both.interpolate(method='spline', order=2)
+    data = df_both.interpolate(method='polynomial', order=2)
 
 
     DOY =  pd.DatetimeIndex(data.index.values).day_of_year
@@ -106,6 +106,7 @@ class Irradiance():
 
     data['DOY'] = DOY
     data['Solar Zenith angle'] = psi
+    data = data.fillna(0)
     
 
     return inputs ,data, metadata
