@@ -54,6 +54,9 @@ class Irradiance():
     data['Time_H'] = data.index.strftime("%H").astype(float)
     data['Time_M'] = data.index.strftime("%M").astype(float)
     data['Time_S'] = data.index.strftime("%S").astype(float)
+    data['Month'] = data.index.strftime("%m").astype(float)
+    data['Day'] = data.index.strftime("%d").astype(float)
+
 
     new_index = data.index.map(lambda t: t.replace(year=2030))
     data=data.set_index(new_index)
@@ -61,9 +64,13 @@ class Irradiance():
 
 
 
-    df_both = pd.date_range("2030-01-01 00:00:00", "2030-12-31 23:00:00", freq='5T').to_frame()
+    df_both = pd.date_range("2030-01-01 00:00:00", "2030-12-31 23:00:00", freq='15T').to_frame()
     df_both = df_both.drop([0], axis=1)
     df_both = df_both.merge(data, left_index=True, right_index=True, how='left')
+
+    df_both['Month']= df_both['Month'].fillna(method='ffill')
+    df_both['Day']= df_both['Day'].fillna(method='ffill')
+
     data = df_both.interpolate(method='polynomial', order=2)
 
 
