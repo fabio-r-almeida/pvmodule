@@ -64,7 +64,7 @@ class Irradiance():
 
 
 
-    df_both = pd.date_range("2030-01-01 00:00:00", "2030-12-31 23:00:00", freq='15T').to_frame()
+    df_both = pd.date_range("2030-01-01 00:00:00", "2030-12-31 23:00:00", freq='5T').to_frame()
     df_both = df_both.drop([0], axis=1)
     df_both = df_both.merge(data, left_index=True, right_index=True, how='left')
 
@@ -106,10 +106,7 @@ class Irradiance():
 
 
     cols = ['Rb_front', 'Rb_rear']
-    data[cols] = data[cols].clip(upper=1)
-    
-    data[['GHI', 'DHI','DNI']] = data[['GHI', 'DHI','DNI']].clip(lower=0)
-
+    data[cols] = data[cols].clip(upper=5)
 
     data['DOY'] = DOY
     data['Solar Zenith angle'] = psi
@@ -144,6 +141,8 @@ class Irradiance():
 
     if module['BIPV'] == 'N' :
       data['Total_G'] = G_front
+      data[['GHI', 'DHI','DNI','G_Front','Total_G']] = data[['GHI', 'DHI','DNI','G_Front','Total_G']].clip(lower=0)
+
       return inputs ,data, metadata
 
 
@@ -154,6 +153,8 @@ class Irradiance():
     G_Rear = GR_beam + GR_diffuse + GR_reflected
     data['G_Rear'] = G_Rear
     data['Total_G'] = G_Rear + G_front
+    data[['GHI', 'DHI','DNI','G_Front','Total_G','G_Rear']] = data[['GHI', 'DHI','DNI','G_Front','Total_G','G_Rear']].clip(lower=0)
+
 
     return inputs ,data, metadata
 
