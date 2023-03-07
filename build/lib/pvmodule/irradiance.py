@@ -51,22 +51,23 @@ class Irradiance():
                           }, inplace = True)
 
   
-    data['Time_H'] = data.index.strftime("%H").astype(float)
-    data['Time_M'] = data.index.strftime("%M").astype(float)
-    data['Time_S'] = data.index.strftime("%S").astype(float)
+
     data['Month'] = data.index.strftime("%m").astype(float)
     data['Day'] = data.index.strftime("%d").astype(float)
-
 
     new_index = data.index.map(lambda t: t.replace(year=2030))
     data=data.set_index(new_index)
 
 
 
-
     df_both = pd.date_range("2030-01-01 00:00:00", "2030-12-31 23:00:00", freq='5T').to_frame()
     df_both = df_both.drop([0], axis=1)
     df_both = df_both.merge(data, left_index=True, right_index=True, how='left')
+
+        
+    df_both['Time_H'] = df_both.index.strftime("%H").astype(float)
+    df_both['Time_M'] = df_both.index.strftime("%M").astype(float)
+    df_both['Time_S'] = df_both.index.strftime("%S").astype(float)
 
     df_both['Month']= df_both['Month'].fillna(method='ffill')
     df_both['Day']= df_both['Day'].fillna(method='ffill')
@@ -77,8 +78,9 @@ class Irradiance():
     DOY =  pd.DatetimeIndex(data.index.values).day_of_year
     data['Declination'] = (23.45*np.sin(np.deg2rad((360/365)*(284+DOY)))).values
 
-    omega = 0.25*(data['Time_H']*60+data['Time_M']+data['Time_S']/60-12*60)
-    data = data.drop(['Time_H', 'Time_M','Time_S'], axis=1)
+    #omega = 0.25*(data['Time_H']*60+data['Time_M']+data['Time_S']/60-12)
+    omega = abs((data['Time_H']*60+data['Time_M']+data['Time_S']/60)/4 - 180)
+    #data = data.drop(['Time_H', 'Time_M','Time_S'], axis=1)
 
     data['Hour angle'] = omega
 
@@ -106,7 +108,7 @@ class Irradiance():
 
 
     cols = ['Rb_front', 'Rb_rear']
-    data[cols] = data[cols].clip(upper=5)
+    data[cols] = data[cols].clip(upper=1)
 
     data['DOY'] = DOY
     data['Solar Zenith angle'] = psi
@@ -149,6 +151,12 @@ class Irradiance():
     GR_beam = Irradiance()._GR_beam(data)
     GR_diffuse =  Irradiance()._GR_diffuse(data, module, panel_distance, panel_tilt)
     GR_reflected = Irradiance()._GR_reflected(data, albedo, module, panel_distance, panel_tilt, azimuth,Elevation)
+
+    data['GR_beam'] = GR_beam
+    data['GR_diffuse'] = GR_diffuse
+    data['GR_reflected'] = GR_reflected
+
+
 
     G_Rear = GR_beam + GR_diffuse + GR_reflected
     data['G_Rear'] = G_Rear
@@ -336,11 +344,22 @@ class Irradiance():
 
     S = np.where( (data['GHI'] > 0 )|( data['DHI'] > 0 )| (data['DNI']> 0), Shadow, 0)
 
-    S = pd.DataFrame(S, columns = ['Shadow'] , index=data.index)
+    S = abs(pd.DataFrame(S, columns = ['Shadow'] , index=data.index))
+    S = S.clip(lower=A)
 
     L8 = np.sqrt((S - A*np.sin(miu*np.pi/180))**2 + (A*np.sin(miu*np.pi/180))**2)
     L3 = A*np.cos(miu*np.pi/180) + D
     L9 = np.sqrt((A*np.sin(miu*np.pi/180))**2+(D)**2)
+
+    
+
+    import pandas as pd
+    df = pd.DataFrame()
+    df['L8'] = L8
+    df['L3'] = L3
+    df['L9'] = L9
+    df['S'] = S
+    df.to_csv('out_new.csv')
 
 
 
@@ -416,9 +435,9 @@ class Irradiance():
 
 
 
-    VF_Module2Ground = Irradiance()._VF_front_Module2sGround(data, module, panel_distance, panel_tilt,azimuth,Elevation) + Irradiance()._VF_front_Module2usGround(data, module, panel_distance, panel_tilt,azimuth,Elevation)
+    #VF_Module2Ground = Irradiance()._VF_front_Module2sGround(data, module, panel_distance, panel_tilt,azimuth,Elevation) + Irradiance()._VF_front_Module2usGround(data, module, panel_distance, panel_tilt,azimuth,Elevation)
 
-    GF_reflected = data['GHI']*albedo*VF_Module2Ground['Shadow']
+    #GF_reflected = data['GHI']*albedo*VF_Module2Ground['Shadow']
 
 
 
