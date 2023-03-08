@@ -38,13 +38,13 @@ class Modules():
     def module(self,model:str ,modules_per_string:int=1, number_of_strings:int=1,losses:float=0, first_year_degradation:float=2,annual_degradation:float=0.33, url: str='https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/PV_Modules.csv') -> dict:
       """
       This method defines the module used for the calculations.
-      The standarts module is the LG_Neon_2_ LG350N1C-V5 with the following specsheet:
       """
 
       import pandas as pd
       module = pd.read_csv(self.url).replace(" ", "")
 
       module = module.loc[module['Model Number'] == model]
+      module = module.fillna(0)
       module = module.values.tolist()
 
       return      {'name': module[0][0]+' '+module[0][1],
@@ -61,6 +61,8 @@ class Modules():
                   'number_of_strings': number_of_strings,
                   'losses': losses,
                   'BIPV': module[0][9],
+                  'ISC_rear': module[0][20],
+                  'Pmax_rear': module[0][21],
                   'first_year_degradation': first_year_degradation,
                   'annual_degradation': annual_degradation }
 

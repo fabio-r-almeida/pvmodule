@@ -3,7 +3,7 @@ class Irradiance():
   def __init__(self, url:str="https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/Albedo.csv"):
     self.url = 'https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/Albedo.csv'
 
-  def _get_TMY(self, location, panel_tilt:float, azimuth:float):
+  def _get_TMY(self, location, panel_tilt:float, azimuth:float, startyear:int=2018, endyear:int=2020 ):
 
     """
     This method gets from PVGIS the necessary data using the TMY.
@@ -23,6 +23,7 @@ class Irradiance():
     import pandas as pd
     import numpy as np
     from pvmodule import PVGIS
+    from scipy.signal import savgol_filter
 
     #params
 
@@ -36,33 +37,68 @@ class Irradiance():
     #WD10m: 10-m wind direction (0 = N
     #SP: Surface (air) pressure (Pa)
 
-    inputs ,data, metadata = PVGIS().retrieve_tmy(location.latitude,location.longitude)
-
-
-
-    data.rename(columns = {'G(h)':'GHI',
-                           'Gd(h)':'DHI',
-                           'Gb(n)':'DNI',
-                           'RH':'Relative Humidity',
+    #Gb(i)  Gd(i)  Gr(i)  H_sun    T2m  WS10m  Int
+    inputs , data, metadata = PVGIS().retrieve_hourly(location.latitude ,
+                      location.longitude, 
+                      startyear = startyear, 
+                      endyear = endyear, 
+                      surface_tilt = panel_tilt, 
+                      surface_azimuth = azimuth, 
+                      components = 1)  
+    
+    data.rename(columns = {'Gb(i)':'GHI',
+                           'Gd(i)':'DHI',
+                           'Gr(i)':'DNI',
                            'T2m':'2m Air Temperature',
-                           'WS10m':'10m Wind speed',
-                           'WD10m':'10m wind direction',
-                           'SP':'Air pressure',
+                           'WS10m':'10m Wind speed'
                           }, inplace = True)
+    data = data.drop(['Int','H_sun'], axis=1)
+
+    
+    
+    #inputs ,data, metadata = PVGIS().retrieve_tmy(location.latitude,location.longitude)
+
+
+    #data.rename(columns = {'G(h)':'GHI',
+    #                       'Gd(h)':'DHI',
+    #                       'Gb(n)':'DNI',
+    #                       'RH':'Relative Humidity',
+    #                       'T2m':'2m Air Temperature',
+    #                       'WS10m':'10m Wind speed',
+    #                       'WD10m':'10m wind direction',
+    #                       'SP':'Air pressure',
+    #                      }, inplace = True)
 
   
 
     data['Month'] = data.index.strftime("%m").astype(float)
     data['Day'] = data.index.strftime("%d").astype(float)
 
-    new_index = data.index.map(lambda t: t.replace(year=2030))
-    data=data.set_index(new_index)
+
+
+    #new_index = data.index.map(lambda t: t.replace(year=2030))
+    #data=data.set_index(new_index)
+    #display(data)
+    data.index = pd.DatetimeIndex(data.index)
+    data.index = data.index + pd.DateOffset(year=2030)
+ 
+    data = data.groupby(data.index, as_index=True).mean()
+
+
+    #data['Group_By'] = pd.to_datetime(data['Group_By'], format='2030-%m-%d %H:%M:%S')
 
 
 
-    df_both = pd.date_range("2030-01-01 00:00:00", "2030-12-31 23:00:00", freq='5T').to_frame()
+
+    #####
+
+
+    df_both = pd.date_range(f"{2030}-01-01 00:10:00", f"{2030}-12-31 23:10:00", freq='5T').to_frame()
     df_both = df_both.drop([0], axis=1)
     df_both = df_both.merge(data, left_index=True, right_index=True, how='left')
+
+
+
 
         
     df_both['Time_H'] = df_both.index.strftime("%H").astype(float)
@@ -73,14 +109,17 @@ class Irradiance():
     df_both['Day']= df_both['Day'].fillna(method='ffill')
 
     data = df_both.interpolate(method='polynomial', order=2)
+    data['DHI'] = data['DHI'].round(0)
+    data['GHI'] = data['GHI'].round(0)
+    data['DNI'] = data['DNI'].round(0)
+
 
 
     DOY =  pd.DatetimeIndex(data.index.values).day_of_year
     data['Declination'] = (23.45*np.sin(np.deg2rad((360/365)*(284+DOY)))).values
 
-    #omega = 0.25*(data['Time_H']*60+data['Time_M']+data['Time_S']/60-12)
     omega = abs((data['Time_H']*60+data['Time_M']+data['Time_S']/60)/4 - 180)
-    #data = data.drop(['Time_H', 'Time_M','Time_S'], axis=1)
+    data = data.drop(['Time_H', 'Time_M','Time_S'], axis=1)
 
     data['Hour angle'] = omega
 
@@ -144,6 +183,9 @@ class Irradiance():
     if module['BIPV'] == 'N' :
       data['Total_G'] = G_front
       data[['GHI', 'DHI','DNI','G_Front','Total_G']] = data[['GHI', 'DHI','DNI','G_Front','Total_G']].clip(lower=0)
+      data['Total_G'] = data['Total_G'].round(0)
+      data = data.drop(['Declination', 'Hour angle','Rb_front','Rb_rear','Solar Zenith angle','GHI','DNI','DHI','2m Air Temperature','10m Wind speed'], axis=1)
+
 
       return inputs ,data, metadata
 
@@ -152,16 +194,12 @@ class Irradiance():
     GR_diffuse =  Irradiance()._GR_diffuse(data, module, panel_distance, panel_tilt)
     GR_reflected = Irradiance()._GR_reflected(data, albedo, module, panel_distance, panel_tilt, azimuth,Elevation)
 
-    data['GR_beam'] = GR_beam
-    data['GR_diffuse'] = GR_diffuse
-    data['GR_reflected'] = GR_reflected
-
-
-
     G_Rear = GR_beam + GR_diffuse + GR_reflected
     data['G_Rear'] = G_Rear
     data['Total_G'] = G_Rear + G_front
     data[['GHI', 'DHI','DNI','G_Front','Total_G','G_Rear']] = data[['GHI', 'DHI','DNI','G_Front','Total_G','G_Rear']].clip(lower=0)
+    data['Total_G'] = data['Total_G'].round(0)
+    data = data.drop(['Declination', 'Hour angle','Rb_front','Rb_rear','Solar Zenith angle','GHI','DNI','DHI','2m Air Temperature','10m Wind speed'], axis=1)
 
 
     return inputs ,data, metadata
@@ -350,19 +388,6 @@ class Irradiance():
     L8 = np.sqrt((S - A*np.sin(miu*np.pi/180))**2 + (A*np.sin(miu*np.pi/180))**2)
     L3 = A*np.cos(miu*np.pi/180) + D
     L9 = np.sqrt((A*np.sin(miu*np.pi/180))**2+(D)**2)
-
-    
-
-    import pandas as pd
-    df = pd.DataFrame()
-    df['L8'] = L8
-    df['L3'] = L3
-    df['L9'] = L9
-    df['S'] = S
-    df.to_csv('out_new.csv')
-
-
-
     VF_Module2usGround = ( L8 + L3 - L9 - S ) / (2*A)
 
 
