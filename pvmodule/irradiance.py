@@ -3,7 +3,7 @@ class Irradiance():
   def __init__(self, url:str="https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/Albedo.csv"):
     self.url = 'https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/Albedo.csv'
 
-  def _get_TMY(self, location, panel_tilt:float, azimuth:float, startyear:int=2018, endyear:int=2020 ):
+  def _get_TMY(self, location, panel_tilt:float, azimuth:float, startyear:int=2020, endyear:int=2020 ):
 
     """
     This method gets from PVGIS the necessary data using the TMY.
@@ -24,6 +24,9 @@ class Irradiance():
     import numpy as np
     from pvmodule import PVGIS
     from scipy.signal import savgol_filter
+    import warnings
+
+    warnings.simplefilter(action='ignore', category=pd.errors.PerformanceWarning)
 
     #params
 
@@ -79,12 +82,13 @@ class Irradiance():
     #new_index = data.index.map(lambda t: t.replace(year=2030))
     #data=data.set_index(new_index)
     #display(data)
-    data.index = pd.DatetimeIndex(data.index)
-    data.index = data.index + pd.DateOffset(year=2030)
- 
-    data = data.groupby(data.index, as_index=True).mean()
-
-
+    if startyear != endyear:
+      data.index = pd.DatetimeIndex(data.index)
+      data.index = data.index + pd.DateOffset(year=2030)
+      data = data.groupby(data.index, as_index=True).mean()
+      tp_year = 2030
+    else:
+      tp_year = startyear
     #data['Group_By'] = pd.to_datetime(data['Group_By'], format='2030-%m-%d %H:%M:%S')
 
 
@@ -93,7 +97,7 @@ class Irradiance():
     #####
 
 
-    df_both = pd.date_range(f"{2030}-01-01 00:10:00", f"{2030}-12-31 23:10:00", freq='5T').to_frame()
+    df_both = pd.date_range(f"{tp_year}-01-01 00:10:00", f"{tp_year}-12-31 23:10:00", freq='5T').to_frame()
     df_both = df_both.drop([0], axis=1)
     df_both = df_both.merge(data, left_index=True, right_index=True, how='left')
 
@@ -184,7 +188,7 @@ class Irradiance():
       data['Total_G'] = G_front
       data[['GHI', 'DHI','DNI','G_Front','Total_G']] = data[['GHI', 'DHI','DNI','G_Front','Total_G']].clip(lower=0)
       data['Total_G'] = data['Total_G'].round(0)
-      data = data.drop(['Declination', 'Hour angle','Rb_front','Rb_rear','Solar Zenith angle','GHI','DNI','DHI','2m Air Temperature','10m Wind speed'], axis=1)
+      #data = data.drop(['Declination', 'Hour angle','Rb_front','Rb_rear','Solar Zenith angle','GHI','DNI','DHI','2m Air Temperature','10m Wind speed'], axis=1)
 
 
       return inputs ,data, metadata
@@ -195,11 +199,12 @@ class Irradiance():
     GR_reflected = Irradiance()._GR_reflected(data, albedo, module, panel_distance, panel_tilt, azimuth,Elevation)
 
     G_Rear = GR_beam + GR_diffuse + GR_reflected
+
     data['G_Rear'] = G_Rear
     data['Total_G'] = G_Rear + G_front
     data[['GHI', 'DHI','DNI','G_Front','Total_G','G_Rear']] = data[['GHI', 'DHI','DNI','G_Front','Total_G','G_Rear']].clip(lower=0)
     data['Total_G'] = data['Total_G'].round(0)
-    data = data.drop(['Declination', 'Hour angle','Rb_front','Rb_rear','Solar Zenith angle','GHI','DNI','DHI','2m Air Temperature','10m Wind speed'], axis=1)
+    #data = data.drop(['Declination', 'Hour angle','Rb_front','Rb_rear','Solar Zenith angle','GHI','DNI','DHI','2m Air Temperature','10m Wind speed'], axis=1)
 
 
     return inputs ,data, metadata
@@ -457,12 +462,7 @@ class Irradiance():
     return GR_reflected
 
 
-
-
-
-    #VF_Module2Ground = Irradiance()._VF_front_Module2sGround(data, module, panel_distance, panel_tilt,azimuth,Elevation) + Irradiance()._VF_front_Module2usGround(data, module, panel_distance, panel_tilt,azimuth,Elevation)
-
-    #GF_reflected = data['GHI']*albedo*VF_Module2Ground['Shadow']
+    return E_rear
 
 
 
