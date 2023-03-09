@@ -1,9 +1,9 @@
-#@title FINAL (TESE) - Front & Rear Irradiance class { display-mode: "form" }
+#@title FINAL (TESE - sozinho com threads) - Front & Rear Irradiance class { display-mode: "form" }
 class Irradiance():
   def __init__(self, url:str="https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/Albedo.csv"):
     self.url = 'https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/Albedo.csv'
 
-  def _get_TMY(self, location, panel_tilt:float, azimuth:float, startyear:int=2020, endyear:int=2020 ):
+  def _get_TMY(self, location, panel_tilt:float, azimuth:float, _month, startyear:int=2020, endyear:int=2020 ):
 
     """
     This method gets from PVGIS the necessary data using the TMY.
@@ -23,8 +23,8 @@ class Irradiance():
     import pandas as pd
     import numpy as np
     from pvmodule import PVGIS
-    from scipy.signal import savgol_filter
     import warnings
+    from threading import Thread
 
     warnings.simplefilter(action='ignore', category=pd.errors.PerformanceWarning)
 
@@ -40,90 +40,52 @@ class Irradiance():
     #WD10m: 10-m wind direction (0 = N
     #SP: Surface (air) pressure (Pa)
 
-    #Gb(i)  Gd(i)  Gr(i)  H_sun    T2m  WS10m  Int
-    inputs , data, metadata = PVGIS().retrieve_hourly(location.latitude ,
-                      location.longitude, 
-                      startyear = startyear, 
-                      endyear = endyear, 
-                      surface_tilt = panel_tilt, 
-                      surface_azimuth = azimuth, 
-                      components = 1)  
-    
-    data.rename(columns = {'Gb(i)':'GHI',
-                           'Gd(i)':'DHI',
-                           'Gr(i)':'DNI',
-                           'T2m':'2m Air Temperature',
-                           'WS10m':'10m Wind speed'
-                          }, inplace = True)
-    data = data.drop(['Int','H_sun'], axis=1)
-
-    
-    
-    #inputs ,data, metadata = PVGIS().retrieve_tmy(location.latitude,location.longitude)
+    #month 	G(i) 	Gb(i) 	Gd(i) 	G(n) 	Gb(n) 	Gd(n) 	T2m 	WS10m
 
 
-    #data.rename(columns = {'G(h)':'GHI',
-    #                       'Gd(h)':'DHI',
-    #                       'Gb(n)':'DNI',
-    #                       'RH':'Relative Humidity',
-    #                       'T2m':'2m Air Temperature',
-    #                       'WS10m':'10m Wind speed',
-    #                       'WD10m':'10m wind direction',
-    #                       'SP':'Air pressure',
-    #                      }, inplace = True)
-
-  
-
-    data['Month'] = data.index.strftime("%m").astype(float)
-    data['Day'] = data.index.strftime("%d").astype(float)
-
-
-
-    #new_index = data.index.map(lambda t: t.replace(year=2030))
-    #data=data.set_index(new_index)
-    #display(data)
-    if startyear != endyear:
-      data.index = pd.DatetimeIndex(data.index)
-      data.index = data.index + pd.DateOffset(year=2030)
-      data = data.groupby(data.index, as_index=True).mean()
-      tp_year = 2030
-    else:
-      tp_year = startyear
-    #data['Group_By'] = pd.to_datetime(data['Group_By'], format='2030-%m-%d %H:%M:%S')
-
-
-
-
-    #####
-
-
-    df_both = pd.date_range(f"{tp_year}-01-01 00:10:00", f"{tp_year}-12-31 23:10:00", freq='5T').to_frame()
-    df_both = df_both.drop([0], axis=1)
-    df_both = df_both.merge(data, left_index=True, right_index=True, how='left')
-
-
+    inputs, data , metadata = PVGIS().retrieve_daily(
+                        location.latitude, 
+                        location.longitude, 
+                        month= _month, 
+                        angle = 0, 
+                        aspect = 0, 
+                        glob_2axis = 1)
 
 
         
-    df_both['Time_H'] = df_both.index.strftime("%H").astype(float)
-    df_both['Time_M'] = df_both.index.strftime("%M").astype(float)
-    df_both['Time_S'] = df_both.index.strftime("%S").astype(float)
 
-    df_both['Month']= df_both['Month'].fillna(method='ffill')
-    df_both['Day']= df_both['Day'].fillna(method='ffill')
-
-    data = df_both.interpolate(method='polynomial', order=2)
-    data['DHI'] = data['DHI'].round(0)
-    data['GHI'] = data['GHI'].round(0)
-    data['DNI'] = data['DNI'].round(0)
+    data.rename(columns = {'G(i)':'GHI',
+                              'Gb(i)':'DHI',
+                              'Gb(n)':'DNI',
+                              'T2m':'2m Air Temperature',
+                              'WS10m':'10m Wind speed'
+                              }, inplace = True)
 
 
+
+    import pandas as pd
+    #data['Time'] = pd.to_datetime(data.index).time
+    #data.index = data['Time']
+
+    data.index = pd.to_datetime(data.index).strftime('%H:%M:%S')
+
+    data.index = pd.DatetimeIndex(data.index)
+    data['Time_H'] = data.index.strftime("%H").astype(float)
+    data['Time_M'] = data.index.strftime("%M").astype(float)
+    data['Time_S'] = data.index.strftime("%S").astype(float)
+
+    data = data.drop(['Gd(i)','G(n)','Gd(n)'], axis=1)
+
+    
+    data['day'] = data.index.values.astype('datetime64[Y]')
+    data.index = data['day'].values.astype('datetime64[M]') + _month - 1
 
     DOY =  pd.DatetimeIndex(data.index.values).day_of_year
     data['Declination'] = (23.45*np.sin(np.deg2rad((360/365)*(284+DOY)))).values
 
     omega = abs((data['Time_H']*60+data['Time_M']+data['Time_S']/60)/4 - 180)
-    data = data.drop(['Time_H', 'Time_M','Time_S'], axis=1)
+    
+    data = data.drop(['Time_M','Time_S','day'], axis=1)
 
     data['Hour angle'] = omega
 
@@ -170,9 +132,9 @@ class Irradiance():
 
 
 
-  def irradiance(self, module, location, panel_tilt:float=35, albedo:float=0.2, azimuth:float = 0, Elevation=2, panel_distance:float = None):
+  def irradiance(self, module, location,_month, panel_tilt:float=35, albedo:float=0.2, azimuth:float = 0, Elevation=2, panel_distance:float = None):
 
-    inputs ,data, metadata = Irradiance()._get_TMY(location, panel_tilt, azimuth)
+    inputs ,data, metadata = Irradiance()._get_TMY(location, panel_tilt, azimuth, _month=_month)
 
 
     if panel_distance == None:
@@ -188,9 +150,8 @@ class Irradiance():
       data['Total_G'] = G_front
       data[['GHI', 'DHI','DNI','G_Front','Total_G']] = data[['GHI', 'DHI','DNI','G_Front','Total_G']].clip(lower=0)
       data['Total_G'] = data['Total_G'].round(0)
+      data['G_Rear'] = 0
       #data = data.drop(['Declination', 'Hour angle','Rb_front','Rb_rear','Solar Zenith angle','GHI','DNI','DHI','2m Air Temperature','10m Wind speed'], axis=1)
-
-
       return inputs ,data, metadata
 
 
