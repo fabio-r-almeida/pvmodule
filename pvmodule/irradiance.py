@@ -1,9 +1,9 @@
-#@title FINAL (TESE - sozinho com threads) - Front & Rear Irradiance class { display-mode: "form" }
+#@title FINAL (TESE) - Front & Rear Irradiance class { display-mode: "form" }
 class Irradiance():
   def __init__(self, url:str="https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/Albedo.csv"):
     self.url = 'https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/Albedo.csv'
 
-  def _get_TMY(self, location, panel_tilt:float, azimuth:float, _month, startyear:int=2020, endyear:int=2020 ):
+  def _get_TMY(self, module, location, panel_tilt:float, azimuth:float, _month, startyear:int=2020, endyear:int=2020 ):
 
     """
     This method gets from PVGIS the necessary data using the TMY.
@@ -42,15 +42,34 @@ class Irradiance():
 
     #month 	G(i) 	Gb(i) 	Gd(i) 	G(n) 	Gb(n) 	Gd(n) 	T2m 	WS10m
 
-
-    inputs, data , metadata = PVGIS().retrieve_daily(
+    if module['BIPV'] == 'Y' and panel_tilt > 80:
+      inputs, data1 , metadata = PVGIS().retrieve_daily(
                         location.latitude, 
                         location.longitude, 
                         month= _month, 
-                        angle = 0, 
-                        aspect = 0, 
+                        angle = panel_tilt, 
+                        aspect = azimuth*-1, 
                         glob_2axis = 1)
+      
+      inputs2, data2 , metadata2 = PVGIS().retrieve_daily(
+                        location.latitude, 
+                        location.longitude, 
+                        month= _month, 
+                        angle = panel_tilt, 
+                        aspect = azimuth, 
+                        glob_2axis = 1)
+      
+      data = data1.add(data2, fill_value=0)
+      
 
+    else:
+      inputs, data , metadata = PVGIS().retrieve_daily(
+                        location.latitude, 
+                        location.longitude, 
+                        month= _month, 
+                        angle = panel_tilt, 
+                        aspect = azimuth, 
+                        glob_2axis = 1)
 
         
 
@@ -134,7 +153,7 @@ class Irradiance():
 
   def irradiance(self, module, location,_month, panel_tilt:float=35, albedo:float=0.2, azimuth:float = 0, Elevation=2, panel_distance:float = None):
 
-    inputs ,data, metadata = Irradiance()._get_TMY(location, panel_tilt, azimuth, _month=_month)
+    inputs ,data, metadata = Irradiance()._get_TMY(module, location, panel_tilt, azimuth, _month=_month)
 
 
     if panel_distance == None:

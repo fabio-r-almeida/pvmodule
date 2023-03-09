@@ -69,9 +69,11 @@ class System():
         PV_out_Rear = 0
 
       #losses
-      PV_out_Total = PV_out_Total * (1 - module['losses'])
-      PV_out_Front = PV_out_Front * (1 - module['losses'])
-      PV_out_Rear = PV_out_Rear * (1 - module['losses'])
+      losses = 1 - module['losses']/100
+
+      PV_out_Total = PV_out_Total * (losses)
+      PV_out_Front = PV_out_Front * (losses)
+      PV_out_Rear = PV_out_Rear * (losses)
 
       estimated_current_total = ISC*Irradiance['Total_G']/1200
       estimated_current_front = Isc_front*Irradiance['G_Front']/1000
@@ -79,7 +81,6 @@ class System():
         estimated_current_rear = Isc_rear*Irradiance['G_Rear']/200
       else:
         estimated_current_rear = 0
-
 
       PV_output_total_system = PV_out_Total * (module['modules_per_string']*module['number_of_strings'])
       PV_output_front_system = PV_out_Front * (module['modules_per_string']*module['number_of_strings'])
@@ -117,6 +118,8 @@ class System():
       PV_output_total_system['Watt per Watt_peak'] = (PV_out_Total/(module['modules_per_string']*module['number_of_strings'])) / module['pdc']
 
       PV_output_total_system = PV_output_total_system.fillna(0)
+      PV_output_total_system['Time_H'] = Irradiance['Time_H']
+
      
       return PV_output_total_system
 
