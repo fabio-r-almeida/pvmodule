@@ -31,13 +31,10 @@ Dry Loam,0.23,0.23
 Face Skin,0.25-0.35,0.3
 Fallow Field,0.05-0.12,0.085
 Fresh Snow,0.8-0.9,0.85
-Fresh Snow,0.75-0.78,0.765
-Fresh Snow,0.75-0.95,0.85
 Galvanized Steel,0.24,0.24
 Granite,0.12-0.18,0.15
 Gray Ice,0.6,0.6
 Green Grass,0.25,0.25
-Green Grass,0.26,0.26
 Green Meadow,0.10-0.20,0.15
 Gypsum,0.55,0.55
 Ice (Glacier),0.2-0.4,0.3
@@ -59,7 +56,7 @@ New Concrete With White Portland Cement,0.7-0.8,0.75
 Ocean Ice,0.5-0.7,0.6
 Old Snow,0.35-0.70,0.525
 Old/Melting Snow,0.40-0.80,0.6
-Pet Soil,0.05-15,7.525
+Pet Soil,0.05-15,0.525
 Plaster ,0.4-0.45,0.425
 Polished Aluminum,0.65-0.75,0.7
 Polished Chrome,0.6-0.7,0.65
