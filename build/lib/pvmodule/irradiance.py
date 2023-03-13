@@ -171,7 +171,6 @@ class Irradiance():
       data['Total_G'] = data['Total_G'].round(0)
       data['G_Rear'] = 0
       #data = data.drop(['Declination', 'Hour angle','Rb_front','Rb_rear','Solar Zenith angle','GHI','DNI','DHI','2m Air Temperature','10m Wind speed'], axis=1)
-      return inputs ,data, metadata
 
 
     GR_beam = Irradiance()._GR_beam(data)
@@ -182,10 +181,24 @@ class Irradiance():
 
     data['G_Rear'] = G_Rear
     data['Total_G'] = G_Rear + G_front
-    data[['GHI', 'DHI','DNI','G_Front','Total_G','G_Rear']] = data[['GHI', 'DHI','DNI','G_Front','Total_G','G_Rear']].clip(lower=0)
     data['Total_G'] = data['Total_G'].round(0)
     #data = data.drop(['Declination', 'Hour angle','Rb_front','Rb_rear','Solar Zenith angle','GHI','DNI','DHI','2m Air Temperature','10m Wind speed'], axis=1)
+    
+    import numpy as np
+    import pandas as pd
+    n = 3
+    new_index = pd.RangeIndex(len(data)*(n+1))
+    new_df = pd.DataFrame(np.nan, index=new_index, columns=data.columns)
+    ids = np.arange(len(data))*(n+1)
+    new_df.loc[ids] = data.values
 
+    new_df['month']= new_df['month'].fillna(method='ffill')
+    new_df['DOY']= new_df['DOY'].fillna(method='ffill')
+    new_df = new_df.interpolate(method='polynomial', order=2)
+    data = new_df
+
+    data.drop(data.tail(n).index,inplace=True) # drop last n rows
+    data[['GHI', 'DHI','DNI','G_Front','Total_G','G_Rear']] = data[['GHI', 'DHI','DNI','G_Front','Total_G','G_Rear']].clip(lower=0)
 
     return inputs ,data, metadata
 
@@ -440,11 +453,6 @@ class Irradiance():
     GR_reflected = data['GHI']*albedo*VF_rear_Module2usGround['Shadow'] + data['DHI']*albedo*VF_rear_Module2sGround['Shadow']
 
     return GR_reflected
-
-
-    return E_rear
-
-
 
 
 #
