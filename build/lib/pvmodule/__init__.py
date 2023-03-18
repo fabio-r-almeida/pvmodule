@@ -5,3 +5,4 @@ from pvmodule.simulation import Simulation
 from pvmodule.module import Modules
 from pvmodule.inverter import Inverters
 from pvmodule.irradiance import Irradiance
+from pvmodule.graph import Graph

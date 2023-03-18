@@ -1,6 +1,7 @@
 README.md
 setup.py
 pvmodule/__init__.py
+pvmodule/graph.py
 pvmodule/inverter.py
 pvmodule/irradiance.py
 pvmodule/location.py

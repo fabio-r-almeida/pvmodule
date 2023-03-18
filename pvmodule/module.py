@@ -42,7 +42,6 @@ class Modules():
 
       import pandas as pd
       module = pd.read_csv(self.url).replace(" ", "")
-
       module = module.loc[module['Model Number'] == model]
       module = module.fillna(0)
       module = module.values.tolist()

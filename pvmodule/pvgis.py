@@ -48,7 +48,7 @@ class PVGIS():
         self.showtemperatures = None  # ,showtemperatures
         self.localtime = None  # localtime
 
-    def retrieve_hourly( self, latitude: float, longitude: float, usehorizon: int = 1, userhorizon: int = None, raddatabase: str = None, startyear: int = None, endyear: int = None, pvcalculation: int = 0, peakpower: float = None, pvtechchoice: str = "crystSi", mountingplace: str = "free", loss: float = None, trackingtype: int = 0, surface_tilt: float = 0, surface_azimuth: float = 0, optimalinclination: int = 0, optimalangles: int = 0, components: int = 0, outputformat: str = "json", url: str = "http://re.jrc.ec.europa.eu/api/v5_2/") -> object:
+    def retrieve_hourly( self, latitude: float, longitude: float, usehorizon: int = 1, userhorizon: int = None, raddatabase: str = None, startyear: int = 2020, endyear: int = 2020, pvcalculation: int = 0, peakpower: float = None, pvtechchoice: str = "crystSi", mountingplace: str = "free", loss: float = None, trackingtype: int = 0, surface_tilt: float = 0, surface_azimuth: float = 0, optimalinclination: int = 0, optimalangles: int = 0, components: int = 0, outputformat: str = "json", url: str = "http://re.jrc.ec.europa.eu/api/v5_2/") -> object:
         """
         Hourly Data: This method retrieves real-world data using the PVGIS-API.
         ...
@@ -182,6 +182,22 @@ class PVGIS():
             return PVGIS().retrieve_hourly(self.latitude, self.longitude, self.usehorizon, self.userhorizon, self.raddatabase, self.startyear, self.endyear, self.pvcalculation, self.peakpower, self.pvtechchoice, self.mountingplace, self.loss, self.trackingtype, self.surface_tilt, self.surface_azimuth, self.optimalinclination, self.optimalangles, self.components, self.outputformat, url = "http://re.jrc.ec.europa.eu/api/v5_1/")
 
         return self.data
+
+    def retrieve_hourly_bifacial( self, latitude: float, longitude: float, usehorizon: int = 1, userhorizon: int = None, raddatabase: str = None, startyear: int = 2020, endyear: int = 2020, pvcalculation: int = 0, peakpower: float = None, pvtechchoice: str = "crystSi", mountingplace: str = "free", loss: float = None, trackingtype: int = 0, surface_tilt: float = 0, surface_azimuth: float = 0, optimalinclination: int = 0, optimalangles: int = 0, components: int = 0, outputformat: str = "json", url: str = "http://re.jrc.ec.europa.eu/api/v5_2/") -> object:
+        
+        panel_tilt = 90
+        azimuth_backsheet = int(surface_azimuth) + 180
+        if azimuth_backsheet <= 180:
+          pass
+        else:
+          azimuth_backsheet = azimuth_backsheet - 360
+          
+        _, data1, _ = PVGIS().retrieve_hourly(latitude, longitude , startyear = startyear, endyear= endyear, surface_tilt = surface_tilt, surface_azimuth = surface_azimuth)
+        _, data2, _ = PVGIS().retrieve_hourly(latitude, longitude , startyear = startyear, endyear= endyear, surface_tilt = surface_tilt, surface_azimuth = azimuth_backsheet)
+
+        data2 = data2.drop(['H_sun','T2m','WS10m'], axis=1)
+        data = data1.add(data2, fill_value=0)
+        return data
 
     def retrieve_monthly(self, latitude: float, longitude: float, usehorizon: int = 1, userhorizon: int = None, raddatabase: str = None, startyear: int = None, endyear: int = None, horirrad: int = 1, optrad: int = 0, selectrad: int = 0, angle: int = 0, mr_dni: int = 1, d2g: int = 1, avtemp: int = 1, outputformat: str = "json", url: str = "http://re.jrc.ec.europa.eu/api/v5_2/", ) -> object:
         """
@@ -512,3 +528,115 @@ class PVGIS():
 
         self.data = inputs, outputs, meta
         return self.data
+   
+   
+    def retrieve_all_year(self, location, panel_tilt, azimuth):
+      import pandas as pd
+      import concurrent.futures
+
+      def load_data(location,panel_tilt, azimuth, month_):
+        inputs, data , metadata = PVGIS().retrieve_daily(
+                              location.latitude, 
+                              location.longitude, 
+                              month= month_,
+                              angle=panel_tilt,
+                              aspect=azimuth,
+                              glob_2axis = 1)
+        return inputs , data , metadata
+
+      MONTHS = [1,2,3,4,5,6,7,8,9,10,11,12]
+      import pandas as pd
+      outputs = pd.DataFrame()
+      with concurrent.futures.ThreadPoolExecutor(max_workers=12) as executor:
+          # Start the load operations and mark each future with its URL
+          future_to_url = {executor.submit(load_data, location, panel_tilt, azimuth, month): month for month in MONTHS}
+          for future in concurrent.futures.as_completed(future_to_url):
+              url = future_to_url[future]
+              try:
+                  inputs , data , metadata = future.result()
+              except Exception as exc:
+                  print('%r generated an exception: %s' % (url, exc))
+              else:
+                outputs =  pd.concat([data, outputs])
+
+      
+      
+      data = outputs.sort_values(by=['month', 'time'])
+
+      data.rename(columns = {   'G(i)':'Global irradiance on a fixed plane',
+                                'Gb(i)':'Direct irradiance on a fixed plane',
+                                'Gb(n)':'Direct normal irradiance',
+                                'T2m':'2m Air Temperature',
+                                'WS10m':'10m Wind speed',
+                                'G(n)': 'Global irradiance on 2-axis tracking plane',
+                                'Gd(i)': 'Diffuse irradiance on a fixed plane',
+                                'Gd(n)': 'Diffuse irradiance on 2-axis tracking plane'
+                                }, inplace = True)
+
+      self.data = inputs , data , metadata 
+      return self.data
+
+    def retrieve_all_year_bifacial(self, location, azimuth):
+      import pandas as pd
+      import concurrent.futures
+
+      def load_data(location, azimuth, month_):
+        azimuth_backsheet = int(azimuth) + 180
+        if azimuth_backsheet <= 180:
+          pass
+        else:
+          azimuth_backsheet = azimuth_backsheet - 360
+
+        inputs, data1 , metadata = PVGIS().retrieve_daily(
+                          location.latitude, 
+                          location.longitude, 
+                          month= month_, 
+                          angle = 90, 
+                          aspect = azimuth, 
+                          glob_2axis = 1)
+        
+        inputs2, data2 , metadata2 = PVGIS().retrieve_daily(
+                          location.latitude, 
+                          location.longitude, 
+                          month= month_, 
+                          angle = 90, 
+                          aspect = azimuth_backsheet, 
+                          glob_2axis = 1)
+        data2 = data2.drop(['month','T2m','WS10m'], axis=1)
+        
+        
+        data = data1.add(data2, fill_value=0)
+        return inputs , data , metadata
+
+      MONTHS = [1,2,3,4,5,6,7,8,9,10,11,12]
+      import pandas as pd
+      outputs = pd.DataFrame()
+      with concurrent.futures.ThreadPoolExecutor(max_workers=12) as executor:
+          # Start the load operations and mark each future with its URL
+          future_to_url = {executor.submit(load_data, location, azimuth, month): month for month in MONTHS}
+          for future in concurrent.futures.as_completed(future_to_url):
+              url = future_to_url[future]
+              try:
+                  inputs , data , metadata = future.result()
+              except Exception as exc:
+                  print('%r generated an exception: %s' % (url, exc))
+              else:
+                outputs =  pd.concat([data, outputs])
+
+      
+      
+      data = outputs.sort_values(by=['month', 'time'])
+
+      data.rename(columns = {   'G(i)':'Global irradiance on a fixed plane',
+                                'Gb(i)':'Direct irradiance on a fixed plane',
+                                'Gb(n)':'Direct normal irradiance',
+                                'T2m':'2m Air Temperature',
+                                'WS10m':'10m Wind speed',
+                                'G(n)': 'Global irradiance on 2-axis tracking plane',
+                                'Gd(i)': 'Diffuse irradiance on a fixed plane',
+                                'Gd(n)': 'Diffuse irradiance on 2-axis tracking plane'
+                                }, inplace = True)
+
+      self.data = inputs , data , metadata 
+      return self.data
+
