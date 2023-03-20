@@ -80,6 +80,7 @@ class Graph():
 
       df1 = irradiance_1[column_name].groupby(irradiance_1['month']).sum()
       df2 = irradiance_2[column_name].groupby(irradiance_2['month']).sum()
+      df = df1 - df2
       comparison =  ( df1 / df2) * 100
       comparison = comparison.reset_index()
       comparison[column_name] = np.where((df1 / df2) * 100 >= 100 , (df1 / df2) * 100 - 100 , -(df2 / df1) * 100 + 100)
@@ -91,9 +92,10 @@ class Graph():
       irradiance_2 = irradiance_2[['time', column_name]]
       df1 = irradiance_1[column_name].groupby(irradiance_1.index.month).sum()
       df2 = irradiance_2[column_name].groupby(irradiance_2.index.month).sum()
+      df = df1 - df2
       comparison =  ( df1 / df2) * 100
       comparison = comparison.reset_index()
-      comparison[column_name] = np.where((df1 / df2) * 100 >= 100 , (df1 / df2) * 100 - 100 , -(df2 / df1) * 100 + 100)
+      comparison[column_name] = np.where((df1 / df2) * 100 >= 100 , (df1 / df2) * 100 - 100 , - (df2 / df1) * 100 + 100)
       comparison.rename({'time': 'Month', column_name: 'Irradiance %'}, axis=1, inplace=True)
 
 
@@ -122,28 +124,33 @@ class Graph():
 
     # Add text annotations to the top of the bars.
     bar_color = bars[0].get_facecolor()
+    i = 0
+    list_of_values = []
     for bar in bars:
+      list_of_values.append(round(df.iloc[i], 1))
       if bar.get_height() < 0:
         ax.text(
             bar.get_x() + bar.get_width() / 2,
-            bar.get_height() - 2.5,
+            bar.get_height() - 1.5,
             f'{round(bar.get_height(), 1)} %',
             horizontalalignment='center',
-            color="black",
+            color="red",
             weight='bold'
         )
       else:
         ax.text(
             bar.get_x() + bar.get_width() / 2,
-            bar.get_height() + 2.5,
+            bar.get_height() + 0.5,
             f'+{round(bar.get_height(), 1)} %',
             horizontalalignment='center',
-            color="black",
+            color="green",
             weight='bold'
         )
+      i += 1
+
+
 
     # Add labels and a title.
-    ax.set_xlabel('Month', labelpad=15, color='#333333', fontsize= 16)
     ax.set_ylabel('Irradiance %', labelpad=15, color='#333333', fontsize= 16)
     ax.set_title('Vertical Bifacial versus Tilted Monofacial', pad=15, color='#333333',
                 weight='bold', fontsize= 16)
@@ -152,14 +159,43 @@ class Graph():
     gains_watts = round((irradiance_1[column_name].sum() - irradiance_2[column_name].sum())/1000,2)
     bifacial_energy = round(irradiance_1[column_name].sum()/1000,2)
     monofacial_energy = round(irradiance_2[column_name].sum()/1000,2)
+    colors = plt.cm.BuPu(np.linspace(0, 0.5, 12))
+    colwidths = 0.92 * (1/12)
+    blue = '#68686b'
+    col_col = []
+    for i in range(len(["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dec"])):
+      col_col.append(blue)
+
+    the_table = plt.table(cellText=[list_of_values],
+                          rowLabels=["Irradiance"],
+                          rowColours=colors,
+                          colLabels=["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dec"],
+                          loc='bottom',
+                          cellLoc='center',
+                          colColours=col_col,
+                          colWidths=[colwidths for x in ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dec"]]
+                          )
+    plt.tick_params(
+    axis='x',          # changes apply to the x-axis
+    bottom=False,      # ticks along the bottom edge are off
+    labelbottom=False) # labels along the bottom edge are off
+    the_table.auto_set_font_size(False)
+    the_table.set_fontsize(10)
+
+    for i, j in zip(the_table.properties()['celld'], the_table.properties()['children']):
+        if i[0]==0:
+            j.get_text().set_color('white')
+            j.get_text().set_weight('bold')
+        else:
+            j.get_text().set_weight('bold')
 
 
   
     if gains < 0:
-      ax.text(0.05, 0.85, f'Total loss of {gains} %\nApproximately of {gains_watts} kW/m2\nBifacial Energy of {bifacial_energy} kW/m2 \nNormal Energy of {monofacial_energy} kW/m2',
+      ax.text(0.1, 0.80, f'Total loss of {gains} %\nApproximately of {gains_watts} kW/m2\nBifacial Energy of {bifacial_energy} kW/m2 \nNormal Energy of {monofacial_energy} kW/m2',
         style='italic', bbox={'facecolor': 'red', 'alpha': 0.2, 'pad': 10}, transform=plt.gcf().transFigure)
     else:
-      ax.text(0.05,0.85, f'Total gain of {gains} %\nApproximately of {gains_watts} kW/m2\nBifacial Energy of {bifacial_energy} kW/m2 \nNormal Energy of {monofacial_energy} kW/m2',
+      ax.text(0.1,0.80, f'Total gain of {gains} %\nApproximately of {gains_watts} kW/m2\nBifacial Energy of {bifacial_energy} kW/m2 \nNormal Energy of {monofacial_energy} kW/m2',
         style='italic', bbox={'facecolor': 'green', 'alpha': 0.2, 'pad': 10}, transform=plt.gcf().transFigure)
 
     fig.tight_layout()
@@ -273,6 +309,7 @@ class Graph():
 
   def Bifacial_azimuth_test(self, location):
     print("Warning, this might take a while.")
+
     import concurrent.futures
     import pandas as pd
     from pvmodule import PVGIS
@@ -318,13 +355,6 @@ class Graph():
       list_of_values = [X,Jan, Feb, Mar, Apr, May, Jun, Jul, Ago, Sep, Oct, Nov, Dec]
       simple_list.append(list_of_values)
 
-      #output.loc[len(output)] = list_of_values
-      #return_output = output
-      #output.loc[X] = [X,Jan, Feb, Mar, Apr, May, Jun, Jul, Ago, Sep, Oct, Nov, Dec]
-      #return_output = output
-      #display(return_output)
-      #return return_output
-
 
     for i in range(-90,90,25):
       PANEL_AZIMUTH = list(range(i, 26 + i,5))
@@ -362,7 +392,7 @@ class Graph():
 
     plt.title(f"Average Monthly irradiance", fontsize= 16);
     ax.legend(Legenda, prop={'size': 16});
-    ax.set_ylabel('W/m2', fontsize= 16);
+    ax.set_ylabel('Irradiance W/m2', fontsize= 16);
     ax.set_xlabel('Azimuth angle (degree)', fontsize= 16);
     plt.grid(color = 'black', linestyle = '--', linewidth = 0.5);
     x_tick =  list(dict.fromkeys(range(-90,91,5)))
@@ -419,7 +449,6 @@ class Graph():
       simple_list.append(list_of_values)
 
 
-
     for i in range(-90,90,25):
       PANEL_AZIMUTH = list(range(i, 26 + i,5))
       PANEL_AZIMUTH = [x for x in PANEL_AZIMUTH if x <= 90]
@@ -456,7 +485,7 @@ class Graph():
 
     plt.title(f"Average Monthly irradiance", fontsize= 16);
     ax.legend(Legenda, prop={'size': 16});
-    ax.set_ylabel('W/m2', fontsize= 16);
+    ax.set_ylabel('Irradiance W/m2', fontsize= 16);
     ax.set_xlabel('Azimuth angle (degree)', fontsize= 16);
     plt.grid(color = 'black', linestyle = '--', linewidth = 0.5);
     x_tick =  list(dict.fromkeys(range(-90,91,5)))
