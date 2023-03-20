@@ -177,7 +177,6 @@ class Graph():
                           )
     plt.tick_params(
     axis='x',          # changes apply to the x-axis
-    bottom=False,      # ticks along the bottom edge are off
     labelbottom=False) # labels along the bottom edge are off
     the_table.auto_set_font_size(False)
     the_table.set_fontsize(10)
