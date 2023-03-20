@@ -4,7 +4,7 @@ try:
     long_description = pypandoc.convert_file('README.md', 'rst')
 except(IOError, ImportError):
     long_description = open('README.md').read()
-VERSION = '0.0.132'
+VERSION = '0.0.133'
 DESCRIPTION = 'A library used to simulate photovoltaic energy production using PVGIS'
 # Setting up
 setup(

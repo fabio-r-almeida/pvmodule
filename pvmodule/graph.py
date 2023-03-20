@@ -19,11 +19,11 @@ class Graph():
     heatmap_data_normal = heatmap_data_normal.reset_index(drop=True)
 
 
-    fig, ax = plt.subplots(figsize=(15,7),sharex=True);
+    fig, ax = plt.subplots(figsize=(15,7),sharex=True)
 
     pivot_normal = heatmap_data_normal.pivot(index='Time in hours', columns='Day', values='G(i)')
     sns.heatmap(pivot_normal,ax=ax,cmap="Spectral_r",vmin=0, vmax=1000)
-    ax.set_title(f'Lat: {location.latitude } Long: {location.longitude }');
+    ax.set_title(f'Lat: {location.latitude } Long: {location.longitude }')
     ax.grid()
     plt.tight_layout()
     return data
@@ -57,11 +57,11 @@ class Graph():
     heatmap_data_normal = heatmap_data_normal.reset_index(drop=True)
 
 
-    fig, ax = plt.subplots(figsize=(15,7),sharex=True);
+    fig, ax = plt.subplots(figsize=(15,7),sharex=True)
 
     pivot_normal = heatmap_data_normal.pivot(index='Time in hours', columns='Day', values='G(i)')
     sns.heatmap(pivot_normal,ax=ax,cmap="Spectral_r",vmin=0, vmax=1000)
-    ax.set_title(f'Lat: {location.latitude } Long: {location.longitude }');
+    ax.set_title(f'Lat: {location.latitude } Long: {location.longitude }')
     ax.grid()
     plt.tight_layout()
     return data
@@ -103,31 +103,26 @@ class Graph():
     comparison['Month'] = comparison['Month'].apply(lambda x: calendar.month_abbr[int(x)])
  
     import matplotlib.pyplot as plt
-    fig, ax = plt.subplots(figsize=(15,7),sharex=True);
+    fig, ax = plt.subplots(figsize=(15,7))
+    NUM_COLORS = 12
+    cm = plt.get_cmap('rainbow')
+    ax.set_prop_cycle(color=[cm(1.*i/NUM_COLORS) for i in range(NUM_COLORS)])
+    colors =[cm(1.*i/NUM_COLORS) for i in range(NUM_COLORS)]
     bars = ax.bar(
         x=comparison['Month'],
         height=comparison['Irradiance %'],
         tick_label=comparison['Month'],
         hatch='//', 
-        alpha=0.5, 
-        color='#ff4dc4'
+        alpha=0.5,
+        color=colors
     )
-
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.spines['left'].set_visible(False)
-    ax.spines['bottom'].set_color('#DDDDDD')
-    ax.tick_params(bottom=False, left=False)
-    ax.set_axisbelow(True)
-    ax.yaxis.grid(True, color='#EEEEEE')
-    ax.xaxis.grid(False)
 
     # Add text annotations to the top of the bars.
     bar_color = bars[0].get_facecolor()
     i = 0
     list_of_values = []
     for bar in bars:
-      list_of_values.append(round(df.iloc[i], 1))
+      list_of_values.append(f'{round(df.iloc[i], 1)} W/m2')
       if bar.get_height() < 0:
         ax.text(
             bar.get_x() + bar.get_width() / 2,
@@ -159,35 +154,24 @@ class Graph():
     gains_watts = round((irradiance_1[column_name].sum() - irradiance_2[column_name].sum())/1000,2)
     bifacial_energy = round(irradiance_1[column_name].sum()/1000,2)
     monofacial_energy = round(irradiance_2[column_name].sum()/1000,2)
-    colors = plt.cm.BuPu(np.linspace(0, 0.5, 12))
+
     colwidths = 0.92 * (1/12)
-    blue = '#68686b'
-    col_col = []
-    for i in range(len(["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dec"])):
-      col_col.append(blue)
-
-    the_table = plt.table(cellText=[list_of_values],
-                          rowLabels=["Irradiance"],
+    celltext = [[el] for el in list_of_values]
+    the_table = plt.table(cellText=celltext,
+                          colLabels=["Irradiance"],
                           rowColours=colors,
-                          colLabels=["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dec"],
-                          loc='bottom',
+                          rowLabels=["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dec"],
+                          loc='right',
                           cellLoc='center',
-                          colColours=col_col,
-                          colWidths=[colwidths for x in ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dec"]]
+                          rowLoc = 'center',
+                          colColours='white',
+                          colWidths=[colwidths for x in ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dec"]],
+                          bbox=[1.1, 0, 0.25, 1]
                           )
-    plt.tick_params(
-    axis='x',          # changes apply to the x-axis
-    labelbottom=False) # labels along the bottom edge are off
-    the_table.auto_set_font_size(False)
-    the_table.set_fontsize(10)
-
-    for i, j in zip(the_table.properties()['celld'], the_table.properties()['children']):
-        if i[0]==0:
-            j.get_text().set_color('white')
-            j.get_text().set_weight('bold')
-        else:
-            j.get_text().set_weight('bold')
-
+    plt.grid(color = 'black', linestyle = '--', linewidth = 0.5)
+    plt.xticks(rotation=45)
+    the_table.set_fontsize(16)
+    the_table.scale(2.88,2.88)
 
   
     if gains < 0:
@@ -258,14 +242,14 @@ class Graph():
       y_tick = list(dict.fromkeys(y_tick))
 
       plt.legend(loc='lower right', frameon=True)
-      plt.grid(color = 'black', linestyle = '--', linewidth = 0.5);
-      plt.xticks(x_tick, x_tick);
-      plt.yticks(y_tick, y_tick);
+      plt.grid(color = 'black', linestyle = '--', linewidth = 0.5)
+      plt.xticks(x_tick, x_tick)
+      plt.yticks(y_tick, y_tick)
 
-      plt.xticks(rotation=45);
-      plt.title(f"Inverter Efficiency", fontsize= 16);
-      plt.ylabel('Efficiency (%)', fontsize= 16);
-      plt.xlabel('Power (kW)', fontsize= 16);
+      plt.xticks(rotation=45)
+      plt.title(f"Inverter Efficiency", fontsize= 16)
+      plt.ylabel('Efficiency (%)', fontsize= 16)
+      plt.xlabel('Power (kW)', fontsize= 16)
       plt.show()
       return [xx, f_min(xx),f_nom(xx),f_max(xx)]
 
@@ -274,7 +258,7 @@ class Graph():
     import matplotlib.pyplot as plt
     import pandas as pd
     pd.options.mode.chained_assignment = None 
-    fig, ax = plt.subplots();
+    fig, ax = plt.subplots()
     hatches = ['/', '\\', '|', '-', '+', 'x', 'o', 'O', '.', '*']
     lines = ['--', '-.', '-', ':']
     NUM_COLORS = len(data_list)
@@ -289,7 +273,7 @@ class Graph():
       import calendar
       data['month'] = data['month'].apply(lambda x: calendar.month_abbr[int(x)])
 
-      data[column_name].plot(figsize=(11.69,8.27), ax=ax, fontsize=10, linestyle = lines[lines_i]);
+      data[column_name].plot(figsize=(11.69,8.27), ax=ax, fontsize=10, linestyle = lines[lines_i])
       plt.fill_between(data.index, data[column_name], step="mid",hatch=hatches[hatches_i], alpha=0.2)
 
       colors_i += 1
@@ -300,11 +284,11 @@ class Graph():
       if hatches_i == len(hatches):
         hatches_i = 0
 
-    plt.title(f"AVERAGE Yearly IRRADIANCE DATA - {data['month'].values[0]}", fontsize= 10);
-    ax.set_ylabel('W/m2', fontsize= 10);
-    ax.set_xlabel('time h', fontsize= 10);
-    plt.grid(color = 'black', linestyle = '--', linewidth = 0.5);
-    plt.xticks(rotation=45);
+    plt.title(f"AVERAGE Yearly IRRADIANCE DATA - {data['month'].values[0]}", fontsize= 10)
+    ax.set_ylabel('W/m2', fontsize= 10)
+    ax.set_xlabel('time h', fontsize= 10)
+    plt.grid(color = 'black', linestyle = '--', linewidth = 0.5)
+    plt.xticks(rotation=45)
 
   def Bifacial_azimuth_test(self, location):
     print("Warning, this might take a while.")
@@ -378,24 +362,24 @@ class Graph():
     output = output.sort_values(by=['X'])
     output = output.set_index('X')
     import matplotlib.pyplot as plt
-    fig, ax = plt.subplots();
+    fig, ax = plt.subplots()
     Legenda = []
     NUM_COLORS = len(output.columns)
     cm = plt.get_cmap('jet')
     ax.set_prop_cycle(color=[cm(1.*i/NUM_COLORS) for i in range(NUM_COLORS)])
     for column in output:
 
-      output[column].plot(figsize=(11.69,8.27), ax=ax, fontsize=10);
+      output[column].plot(figsize=(11.69,8.27), ax=ax, fontsize=10)
       Legenda.append(f"{column}")
 
 
-    plt.title(f"Average Monthly irradiance", fontsize= 16);
-    ax.legend(Legenda, prop={'size': 16});
-    ax.set_ylabel('Irradiance W/m2', fontsize= 16);
-    ax.set_xlabel('Azimuth angle (degree)', fontsize= 16);
-    plt.grid(color = 'black', linestyle = '--', linewidth = 0.5);
+    plt.title(f"Average Monthly irradiance", fontsize= 16)
+    ax.legend(Legenda, prop={'size': 16})
+    ax.set_ylabel('Irradiance W/m2', fontsize= 16)
+    ax.set_xlabel('Azimuth angle (degree)', fontsize= 16)
+    plt.grid(color = 'black', linestyle = '--', linewidth = 0.5)
     x_tick =  list(dict.fromkeys(range(-90,91,5)))
-    plt.xticks(x_tick, x_tick);
+    plt.xticks(x_tick, x_tick)
     return output
 
 
@@ -471,24 +455,24 @@ class Graph():
     output = output.sort_values(by=['X'])
     output = output.set_index('X')
     import matplotlib.pyplot as plt
-    fig, ax = plt.subplots();
+    fig, ax = plt.subplots()
     Legenda = []
     NUM_COLORS = len(output.columns)
     cm = plt.get_cmap('jet')
     ax.set_prop_cycle(color=[cm(1.*i/NUM_COLORS) for i in range(NUM_COLORS)])
     for column in output:
 
-      output[column].plot(figsize=(11.69,8.27), ax=ax, fontsize=10);
+      output[column].plot(figsize=(11.69,8.27), ax=ax, fontsize=10)
       Legenda.append(f"{column}")
 
 
-    plt.title(f"Average Monthly irradiance", fontsize= 16);
-    ax.legend(Legenda, prop={'size': 16});
-    ax.set_ylabel('Irradiance W/m2', fontsize= 16);
-    ax.set_xlabel('Azimuth angle (degree)', fontsize= 16);
-    plt.grid(color = 'black', linestyle = '--', linewidth = 0.5);
+    plt.title(f"Average Monthly irradiance", fontsize= 16)
+    ax.legend(Legenda, prop={'size': 16})
+    ax.set_ylabel('Irradiance W/m2', fontsize= 16)
+    ax.set_xlabel('Azimuth angle (degree)', fontsize= 16)
+    plt.grid(color = 'black', linestyle = '--', linewidth = 0.5)
     x_tick =  list(dict.fromkeys(range(-90,91,5)))
-    plt.xticks(x_tick, x_tick);
+    plt.xticks(x_tick, x_tick)
     return output
   def scatter_map(self):
     
@@ -521,23 +505,45 @@ class Graph():
     
     import matplotlib.pyplot as plt
     import pandas as pd
+    import numpy as np
     for location, data in data_list:
       pd.options.mode.chained_assignment = None 
-      fig, ax = plt.subplots();
+      fig, ax = plt.subplots()
       NUM_COLORS = 12
       cm = plt.get_cmap('rainbow')
       ax.set_prop_cycle(color=[cm(1.*i/NUM_COLORS) for i in range(NUM_COLORS)])
       header = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dec"]
 
+      list_of_values = []
       for month in range(1,13,1):
 
         data = data.dropna()
         month_data = data.loc[data['month'] == month]      
-        month_data[column_name].plot(figsize=(11.69,8.27), ax=ax, fontsize=10);
+        month_data[column_name].plot(figsize=(11.69,8.27), ax=ax, fontsize=10)
+        list_of_values.append(f'{round(month_data[column_name].sum(),2)} W/m2')
 
-      ax.legend(header, prop={'size': 16});
-      plt.title(f"Yearly irradiance for {location}", fontsize= 16);
-      ax.set_ylabel('Irradiance W/m2', fontsize= 16);
-      ax.set_xlabel('time in hours', fontsize= 16);
-      plt.grid(color = 'black', linestyle = '--', linewidth = 0.5);
-      plt.xticks(rotation=45);
+      colors =[cm(1.*i/NUM_COLORS) for i in range(NUM_COLORS)]
+      colwidths = 0.92 * (1/12)
+      celltext = [[el] for el in list_of_values]
+
+      the_table = plt.table(cellText=celltext,
+                            colLabels=["Irradiance"],
+                            rowColours=colors,
+                            rowLabels=["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dec"],
+                            loc='right',
+                            cellLoc='center',
+                            rowLoc = 'center',
+                            colColours='white',
+                            colWidths=[colwidths for x in ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dec"]],
+                            bbox=[1.1, 0, 0.25, 1]
+                            )
+      
+      ax.legend(header, prop={'size': 16},loc=2 )
+      plt.title(f"Yearly irradiance for {location}", fontsize= 16)
+      ax.set_ylabel('Irradiance W/m2', fontsize= 16)
+      ax.set_xlabel('time in hours', fontsize= 16)
+      plt.grid(color = 'black', linestyle = '--', linewidth = 0.5)
+      plt.xticks(rotation=45)
+      the_table.set_fontsize(16)
+      the_table.scale(2.88,2.88)
+
