@@ -393,8 +393,8 @@ time
 
 ## Maximum, Nominal and Minimum efficiencies of an specified inverter
 ``` python
->>> from pvmodule.module import Module
->>> from pvmodule.inverter import Inverter
+>>> from pvmodule.module import Modules
+>>> from pvmodule.inverter import Inverters
 >>> from pvmodule.graph import Graph
 
 >>> module = Modules().module(
@@ -409,7 +409,61 @@ time
 
 ![alt text](https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/documentation/6.png)
 
+## Yearly irradiance curves (of multiple locations)
+``` python
+>>> from pvmodule.location import Location
+>>> from pvmodule.pvgis import PVGIS
+>>> from pvmodule.graph import Graph
 
+>>> location = Location().set_location(
+                                      latitude = 64.14466555827349,
+                                      longitude = -21.95256166366471
+                                      )
+>>> _,location1,_ = PVGIS().retrieve_all_year(
+                                              location,
+                                              panel_tilt = 35,
+                                              azimuth=0
+                                              )
+
+>>> location = Location().set_location(
+                                      latitude = 1.3490983309841909,
+                                      longitude = 103.80140706509002
+                                      )
+>>> _,location2,_ = PVGIS().retrieve_all_year(
+                                              location,
+                                              panel_tilt = 35,
+                                              azimuth=0
+                                              )
+
+>>> location = Location().set_location(
+                                        latitude = 38.6973,
+                                        longitude = -9.30836
+                                        )
+>>> _,location3,_ = PVGIS().retrieve_all_year(
+                                              location,
+                                              panel_tilt = 35,
+                                              azimuth=0
+                                              )
+
+>>> Graph().plot_multiple_yearly(
+                                [
+                                  ('Reykjavik, Iceland',location1)
+                                ],
+                                'Global irradiance on a fixed plane'
+                                )
+
+#>>> Graph().plot_multiple_yearly(
+#                                [
+#                                  ('Reykjavik, Iceland',location1),
+#                                  ('Singapore, Singapore',location2), 
+#                                  ('Lisbon, Portugal',location3)
+#                                ],
+#                                'Global irradiance on a fixed plane'
+#                                )
+
+```
+
+![alt text](https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/documentation/7.png)
 
 
 

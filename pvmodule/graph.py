@@ -269,7 +269,7 @@ class Graph():
       plt.show()
       return [xx, f_min(xx),f_nom(xx),f_max(xx)]
 
-  def plot_multiple(self, data_list, column_name):
+  def plot_multiple_monthly(self, data_list, column_name):
     
     import matplotlib.pyplot as plt
     import pandas as pd
@@ -490,4 +490,54 @@ class Graph():
     x_tick =  list(dict.fromkeys(range(-90,91,5)))
     plt.xticks(x_tick, x_tick);
     return output
+  def scatter_map(self):
+    
+    location = Location().set_location(latitude = 38.6973,longitude = -9.30836)
+    _,bi_data,_ = PVGIS().retrieve_all_year_bifacial(location, azimuth = 90)
 
+    dc = System().dc_production(module, bi_data, "Global irradiance on a fixed plane", "2m Air Temperature", "10m Wind speed")
+    y = dc['Watt per Watt_peak'].to_list()
+    x = dc['Total Irradiance'].to_list()
+
+    z = dc['T cell']
+
+    # Python Program illustrating
+    # pyplot.colorbar() method
+    import numpy as np
+    import matplotlib.pyplot as plt
+        
+
+    fig, ax = plt.subplots(figsize=(15,7))
+
+    # scatterplot
+    plt.scatter(x, y, c=z, cmap="rainbow")
+    plt.ylabel("Power Output (W)")
+    plt.xlabel("Irradiance (W/m2)")
+      
+    plt.colorbar(label="Temperature (°C)", orientation="vertical")
+    plt.show()
+
+  def plot_multiple_yearly(self,data_list, column_name):
+    
+    import matplotlib.pyplot as plt
+    import pandas as pd
+    for location, data in data_list:
+      pd.options.mode.chained_assignment = None 
+      fig, ax = plt.subplots();
+      NUM_COLORS = 12
+      cm = plt.get_cmap('rainbow')
+      ax.set_prop_cycle(color=[cm(1.*i/NUM_COLORS) for i in range(NUM_COLORS)])
+      header = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dec"]
+
+      for month in range(1,13,1):
+
+        data = data.dropna()
+        month_data = data.loc[data['month'] == month]      
+        month_data[column_name].plot(figsize=(11.69,8.27), ax=ax, fontsize=10);
+
+      ax.legend(header, prop={'size': 16});
+      plt.title(f"Yearly irradiance for {location}", fontsize= 16);
+      ax.set_ylabel('Irradiance W/m2', fontsize= 16);
+      ax.set_xlabel('time in hours', fontsize= 16);
+      plt.grid(color = 'black', linestyle = '--', linewidth = 0.5);
+      plt.xticks(rotation=45);
