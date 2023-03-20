@@ -299,6 +299,8 @@ time
 
 # from pvmodule.graph import Graph
 
+## Yearly irradiance distribuition
+
 ``` python
 >>> from pvmodule.location import Location
 >>> from pvmodule.pvgis import PVGIS
@@ -343,25 +345,36 @@ time
 
 ![alt text](https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/documentation/2.png)
 
+## Comparison of monthly average irradiance from vertical vs. 35 horizontal configurations
 
 ``` python
 >>> from pvmodule.location import Location
->>> from pvmodule.location import PVGIS
+>>> from pvmodule.pvgis import PVGIS
 >>> from pvmodule.graph import Graph
 
-_,bi_data,_ = PVGIS().retrieve_all_year_bifacial(location, azimuth = 90)
-_,normal_data,_ = PVGIS().retrieve_all_year(location, panel_tilt = 35, azimuth=0)
-Graph().plot_multiple([bi_data.where(bi_data["month"]==7), normal_data.where(normal_data["month"]==7)],'Global irradiance on a fixed plane')
+>>> _,bi_data,_ = PVGIS().retrieve_all_year_bifacial(
+                                                    location,
+                                                    azimuth = 90)
+>>> _,normal_data,_ = PVGIS().retrieve_all_year(
+                                                location, 
+                                                panel_tilt = 35, 
+                                                azimuth=0)
+>>> Graph().plot_multiple(
+                        [bi_data.where(bi_data["month"]==7), normal_data.where(normal_data["month"]==7)],
+                        'Global irradiance on a fixed plane'
+                        )
 
 ```
 
 ![alt text](https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/documentation/3.png)
 
+
+## Irradiance dependancy due to the changes of azimuth
 ``` python
 >>> from pvmodule.location import Location
 >>> from pvmodule.graph import Graph
 
-Graph().azimuth_test(location)
+>>> Graph().azimuth_test(location)
 
 ```
 
@@ -371,11 +384,32 @@ Graph().azimuth_test(location)
 >>> from pvmodule.location import Location
 >>> from pvmodule.graph import Graph
 
-Graph().Bifacial_azimuth_test(location)
+>>> Graph().Bifacial_azimuth_test(location)
 
 ```
 
 ![alt text](https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/documentation/5.png)
+
+
+## Maximum, Nominal and Minimum efficiencies of an specified inverter
+``` python
+>>> from pvmodule.module import Module
+>>> from pvmodule.inverter import Inverter
+>>> from pvmodule.graph import Graph
+
+>>> module = Modules().module(
+                              'Bi_LG405N2T-L5',
+                              losses=5,
+                              number_of_modules=20
+                              )
+>>> inverter, module = Inverters().auto_select_inverter(module)
+>>> Graph().Efficiency_curve_of_inverter(inverter)
+
+```
+
+![alt text](https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/documentation/6.png)
+
+
 
 
 
@@ -385,13 +419,28 @@ Graph().Bifacial_azimuth_test(location)
   - Calculate pv production
   - Estimate output energy
 - ~~Create annual heatmap~~
-- ~~Extrapolate the 1hour data into 5minute data.~~
+- ~~Average Irradiance dependancy due to the changes of azimuth~~
+- ~~Inverter efficiencies curves~~
 
 
 ## Versions
 ---
 
 All notable changes to this project will be documented in this file.
+
+### [0.0.66] to [0.0.130] - 2023-03-20
+### Added
+- Added new *Graph* class.
+- Multithreading yearly horizontal and vertical data acquisition with 
+  - *PVGIS().retrieve_all_year_bifacial()*
+  - *PVGIS().retrieve_all_year()*
+### Fixed
+- Improved inverter auto-selection.
+- Added error exception in both *Inverter* and *PVGIS* class.
+### Removed
+- Irradiance class will soon be removed due to incorrect irradiance estimations.
+  - This issue is believed to be cause due to the incorrect shadow calculation of the module.
+
 
 ### [0.0.62] to [0.0.65] - 2023-03-04
 ### Added
