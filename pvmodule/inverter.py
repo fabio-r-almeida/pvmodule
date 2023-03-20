@@ -53,38 +53,35 @@ class Inverters():
 
     def auto_select_inverter(self,module):
       import pandas as pd
-
-      number_of_modules = module['modules_per_string'] * module['number_of_strings']
+      number_of_modules = module['number_of_modules']
       Max_Input_DC_Power = number_of_modules * module['pdc'] / 1000
-      Vdcmax = module['modules_per_string'] * module['uoc']
+      Vdcmax = module['uoc']
       Idcmax = module['isc']
 
+
       inverter_list = Inverters().list_inverters(print_list=False)
+      inverter_list = inverter_list.loc[inverter_list['Maximum Continuous Output Power (kW)'] >= Max_Input_DC_Power*0.7]
+      inverter_list = inverter_list.loc[inverter_list['Maximum Continuous Output Power (kW)'] <= Max_Input_DC_Power*1.2]
+      inverter_list = inverter_list.loc[inverter_list['Maximum Short Circuit Current / String'] >= Idcmax]
 
-
-      
-
-      inverter_list = inverter_list.loc[inverter_list['Maximum Continuous Output Power (kW)'] >= Max_Input_DC_Power]
-      inverter_list = inverter_list.loc[inverter_list['Voltage Maximum (Vdc)'] >= Vdcmax] #MAX MPPT
-      inverter_list = inverter_list.loc[inverter_list['Voltage Minimum (Vdc)'] <= Vdcmax] #MIN MPPT
-      inverter_list = inverter_list.loc[inverter_list['Max strings input'] <= module['number_of_strings']]
-      inverter_list = inverter_list.loc[inverter_list['Maximum Short Circuit Current / String'] >= Idcmax] 
-
-      
-
+      inverter_list = inverter_list.loc[inverter_list['Voltage Maximum (Vdc)'] >= (Vdcmax/inverter_list['Max strings input'])*number_of_modules]
+      #inverter_list = inverter_list.loc[inverter_list['Voltage Minimum (Vdc)'] <= Vdcmax]
+      inverter_list = inverter_list.sort_values(by='Maximum Continuous Output Power (kW)', ascending=True)
 
       inverter = pd.DataFrame(inverter_list)
       inverter['efficiency'] = inverter['Weighted Efficiency (%)']
-
-     
       inverter = inverter.sort_values(by='Maximum Continuous Output Power (kW)', ascending=True)
 
       if len(inverter) > 0:
         inverter = inverter.drop( inverter.index.to_list()[1:] ,axis = 0 )
+        module['modules_per_string'] = round(number_of_modules/inverter['Max strings input'].iloc[0],0)
+        module['number_of_strings'] = round(inverter['Max strings input'].iloc[0],0)
+        module['number_of_modules'] = module['modules_per_string']*module['number_of_strings']
+        return  inverter, module
 
-        return  inverter
-
-      return pd.DataFrame()
+      class NoInverterFound(Exception):
+        pass
+      raise NoInverterFound("There is no compatible inverter.")
 
 
 

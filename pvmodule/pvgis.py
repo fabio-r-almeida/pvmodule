@@ -1,4 +1,4 @@
-#@title PVGIS (TESE) class { display-mode: "form" }
+#@title FINAL (TESE) PVGIS class { display-mode: "form" }
 class PVGIS():
     """
     PVGIS class retrieves real-world data from the PVGIS-API.
@@ -171,9 +171,9 @@ class PVGIS():
 
             meta = data["meta"]
         except:
-            print(f"Error: {data}")
-            erro = f"Error: {data}"
-            return erro
+            class FaultyDataInput(Exception):
+              pass
+            raise FaultyDataInput("Error with the PVGIS input.")
 
         self.data = inputs, outputs, meta
 
@@ -302,15 +302,15 @@ class PVGIS():
 
             meta = data["meta"]
         except:
-            print(f"Error: {data}")
-            erro = f"Error: {data}"
-            return erro
+            class FaultyDataInput(Exception):
+              pass
+            raise FaultyDataInput("Error with the PVGIS input.")
 
         self.data = inputs, outputs, meta
 
         return self.data
 
-    def retrieve_daily(self, latitude: float, longitude: float, month: int, usehorizon: int = 1, userhorizon: int = None, raddatabase: str = None, angle: int = 0, aspect: int = 0, global_irr: int = 1, glob_2axis: int = 0, clearsky: int = 0, clearsky_2axis: int = 0, showtemperatures: int = 1, localtime: int = 1, outputformat: str = "json", url: str = "http://re.jrc.ec.europa.eu/api/v5_2/", ) -> object:
+    def retrieve_daily(self, latitude: float, longitude: float, month: int, usehorizon: int = 1, userhorizon: int = None, raddatabase: str = None, angle: int = 0, aspect: int = 0, global_irr: int = 1, glob_2axis: int = 0, clearsky: int = 1, clearsky_2axis: int = 0, showtemperatures: int = 1, localtime: int = 1, outputformat: str = "json", url: str = "http://re.jrc.ec.europa.eu/api/v5_2/", ) -> object:
         """
         Daily Data: This method retrieves real-world data using the PVGIS-API.
         The months count start at January=0 and December=11
@@ -405,9 +405,10 @@ class PVGIS():
             url = url + f"&localtime={self.localtime}"
         if self.outputformat != None:
             url = url + f"&outputformat={self.outputformat}"
-
         self.url = url
+
         data = requests.get(url).json()
+        
         try:
             outputs = data["outputs"]["daily_profile"]
             outputs = pd.json_normalize(outputs)
@@ -418,9 +419,9 @@ class PVGIS():
             meta = data["meta"]
 
         except:
-            print(f"Error: {data}")
-            erro = f"Error: {data}"
-            return erro
+            class FaultyDataInput(Exception):
+              pass
+            raise FaultyDataInput("Error with the PVGIS input.")
 
 
         input_tmy, output_tmy, metadata_tmy = PVGIS().retrieve_tmy(latitude,longitude)
@@ -439,7 +440,6 @@ class PVGIS():
         if(outputs['T2m'].mean() == 0 or outputs['WS10m'].mean() == 0):
           if 'v5_2' in self.url:
             return PVGIS().retrieve_daily(self.latitude, self.longitude, self.month, self.usehorizon, self.userhorizon, self.raddatabase, self.angle, self.aspect, self.global_irr, self.glob_2axis, self.clearsky, self.clearsky_2axis, self.showtemperatures, self.localtime, self.outputformat, url= "http://re.jrc.ec.europa.eu/api/v5_1/", )
-
         self.data = inputs, outputs, meta
         return self.data
 
@@ -523,8 +523,16 @@ class PVGIS():
             meta = data["meta"]
 
         except:
-            print(f"Error : {data}")
-            return data
+            class FaultyDataInput(Exception):
+              pass
+            raise FaultyDataInput("Error with the PVGIS input.")
+
+        outputs.rename(columns = {'G(h)':'Global irradiance on the horizontal plane',
+                                'RH':'relative humidity',
+                                'Gb(n)':' Beam/direct irradiance on a plane always normal to sun rays',
+                                'T2m':'2m Air Temperature',
+                                'Gd(h)': 'Diffuse irradiance on the horizontal plane',
+                                }, inplace = True)
 
         self.data = inputs, outputs, meta
         return self.data
@@ -555,7 +563,9 @@ class PVGIS():
               try:
                   inputs , data , metadata = future.result()
               except Exception as exc:
-                  print('%r generated an exception: %s' % (url, exc))
+                  class FaultyDataInput(Exception):
+                    pass
+                  raise FaultyDataInput(exc)
               else:
                 outputs =  pd.concat([data, outputs])
 
@@ -602,10 +612,10 @@ class PVGIS():
                           angle = 90, 
                           aspect = azimuth_backsheet, 
                           glob_2axis = 1)
+    
         data2 = data2.drop(['month','T2m','WS10m'], axis=1)
-        
-        
         data = data1.add(data2, fill_value=0)
+
         return inputs , data , metadata
 
       MONTHS = [1,2,3,4,5,6,7,8,9,10,11,12]
@@ -619,11 +629,12 @@ class PVGIS():
               try:
                   inputs , data , metadata = future.result()
               except Exception as exc:
-                  print('%r generated an exception: %s' % (url, exc))
+                  class FaultyDataInput(Exception):
+                    pass
+                  raise FaultyDataInput(exc)
               else:
                 outputs =  pd.concat([data, outputs])
 
-      
       
       data = outputs.sort_values(by=['month', 'time'])
 

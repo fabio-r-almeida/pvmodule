@@ -35,7 +35,7 @@ class Modules():
         print(tabulate(modules, headers='keys', tablefmt='psql'))
       return modules
 
-    def module(self,model:str ,modules_per_string:int=1, number_of_strings:int=1,losses:float=0, first_year_degradation:float=2,annual_degradation:float=0.33, url: str='https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/PV_Modules.csv') -> dict:
+    def module(self,model:str ,number_of_modules:int=1, modules_per_string:int=1, number_of_strings:int=1,losses:float=0, first_year_degradation:float=2,annual_degradation:float=0.33, url: str='https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/PV_Modules.csv') -> dict:
       """
       This method defines the module used for the calculations.
       """
@@ -58,6 +58,7 @@ class Modules():
                   'tc_isc': module[0][16],
                   'modules_per_string': modules_per_string,
                   'number_of_strings': number_of_strings,
+                  'number_of_modules': number_of_modules,
                   'losses': losses,
                   'BIPV': module[0][9],
                   'ISC_rear': module[0][20],

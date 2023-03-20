@@ -344,6 +344,41 @@ time
 ![alt text](https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/documentation/2.png)
 
 
+``` python
+>>> from pvmodule.location import Location
+>>> from pvmodule.location import PVGIS
+>>> from pvmodule.graph import Graph
+
+_,bi_data,_ = PVGIS().retrieve_all_year_bifacial(location, azimuth = 90)
+_,normal_data,_ = PVGIS().retrieve_all_year(location, panel_tilt = 35, azimuth=0)
+Graph().plot_multiple([bi_data.where(bi_data["month"]==7), normal_data.where(normal_data["month"]==7)],'Global irradiance on a fixed plane')
+
+```
+
+![alt text](https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/documentation/3.png)
+
+``` python
+>>> from pvmodule.location import Location
+>>> from pvmodule.graph import Graph
+
+Graph().azimuth_test(location)
+
+```
+
+![alt text](https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/documentation/4.png)
+
+``` python
+>>> from pvmodule.location import Location
+>>> from pvmodule.graph import Graph
+
+Graph().Bifacial_azimuth_test(location)
+
+```
+
+![alt text](https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/documentation/5.png)
+
+
+
 ## TODO
 ---
 - Create a simulation method, in which:
