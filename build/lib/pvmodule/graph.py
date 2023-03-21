@@ -23,7 +23,7 @@ class Graph():
 
     pivot_normal = heatmap_data_normal.pivot(index='Time in hours', columns='Day', values='G(i)')
     sns.heatmap(pivot_normal,ax=ax,cmap="Spectral_r",vmin=0, vmax=1000)
-    ax.set_title(f'Lat: {location.latitude } Long: {location.longitude }')
+    ax.set_title(f'Heatmap of the yearly irradiance for Lat: {location.latitude } Long: {location.longitude }')
     ax.grid()
     plt.tight_layout()
     return data
@@ -61,12 +61,12 @@ class Graph():
 
     pivot_normal = heatmap_data_normal.pivot(index='Time in hours', columns='Day', values='G(i)')
     sns.heatmap(pivot_normal,ax=ax,cmap="Spectral_r",vmin=0, vmax=1000)
-    ax.set_title(f'Lat: {location.latitude } Long: {location.longitude }')
+    ax.set_title(f'Heatmap of the yearly irradiance for Lat: {location.latitude } Long: {location.longitude }')
     ax.grid()
     plt.tight_layout()
     return data
 
-  def Comparison(self, bifacial_data, normal_data, column_name):
+  def Comparison(self,location, bifacial_data, normal_data, column_name):
     import numpy as np
     irradiance_1 = bifacial_data
     irradiance_2 = normal_data
@@ -147,7 +147,7 @@ class Graph():
 
     # Add labels and a title.
     ax.set_ylabel('Irradiance %', labelpad=15, color='#333333', fontsize= 16)
-    ax.set_title('Vertical Bifacial versus Tilted Monofacial', pad=15, color='#333333',
+    ax.set_title(f'Vertical Bifacial versus Tilted Monofacial for Lat:{location.latitude} Long:{location.longitude}', pad=15, color='#333333',
                 weight='bold', fontsize= 16)
 
     gains = round((irradiance_1[column_name].sum() / irradiance_2[column_name].sum()) * 100 - 100,2) 
@@ -284,7 +284,7 @@ class Graph():
       if hatches_i == len(hatches):
         hatches_i = 0
 
-    plt.title(f"AVERAGE Yearly IRRADIANCE DATA - {data['month'].values[0]}", fontsize= 10)
+    plt.title(f"Average Yearly irradiance - {data['month'].values[0]}", fontsize= 10)
     ax.set_ylabel('W/m2', fontsize= 10)
     ax.set_xlabel('time h', fontsize= 10)
     plt.grid(color = 'black', linestyle = '--', linewidth = 0.5)
@@ -373,7 +373,7 @@ class Graph():
       Legenda.append(f"{column}")
 
 
-    plt.title(f"Average Monthly irradiance", fontsize= 16)
+    plt.title(f"Average Monthly irradiance for Lat:{location.latitude} Long:{location.longitude}", fontsize= 16)
     ax.legend(Legenda, prop={'size': 16})
     ax.set_ylabel('Irradiance W/m2', fontsize= 16)
     ax.set_xlabel('Azimuth angle (degree)', fontsize= 16)
@@ -466,7 +466,7 @@ class Graph():
       Legenda.append(f"{column}")
 
 
-    plt.title(f"Average Monthly irradiance", fontsize= 16)
+    plt.title(f"Average Monthly irradiance for Lat:{location.latitude} Long:{location.longitude}", fontsize= 16)
     ax.legend(Legenda, prop={'size': 16})
     ax.set_ylabel('Irradiance W/m2', fontsize= 16)
     ax.set_xlabel('Azimuth angle (degree)', fontsize= 16)

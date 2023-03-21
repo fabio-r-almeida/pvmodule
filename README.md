@@ -320,8 +320,9 @@ time
                                                       azimuth=90
                                                       )
 >>> Graph().Comparison(
-                  normal_data, 
+                  location,
                   bifacial_data, 
+                  normal_data,
                   'Global irradiance on a fixed plane'
                   )
 ```
