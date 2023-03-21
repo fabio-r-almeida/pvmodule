@@ -353,6 +353,10 @@ time
 >>> from pvmodule.pvgis import PVGIS
 >>> from pvmodule.graph import Graph
 
+>>> location = Location().set_location(latitude = 38.6973,
+                                   longitude = -9.30836
+                                   )
+
 >>> _,bi_data,_ = PVGIS().retrieve_all_year_bifacial(
                                                     location,
                                                     azimuth = 90)
@@ -360,7 +364,7 @@ time
                                                 location, 
                                                 panel_tilt = 35, 
                                                 azimuth=0)
->>> Graph().plot_multiple(
+>>> Graph().plot_multiple_monthly(
                         [bi_data.where(bi_data["month"]==7), normal_data.where(normal_data["month"]==7)],
                         'Global irradiance on a fixed plane'
                         )
@@ -375,6 +379,10 @@ time
 >>> from pvmodule.location import Location
 >>> from pvmodule.graph import Graph
 
+>>> location = Location().set_location(latitude = 38.6973,
+                                   longitude = -9.30836
+                                   )
+
 >>> Graph().azimuth_test(location)
 
 ```
@@ -384,6 +392,10 @@ time
 ``` python
 >>> from pvmodule.location import Location
 >>> from pvmodule.graph import Graph
+
+>>> location = Location().set_location(latitude = 38.6973,
+                                   longitude = -9.30836
+                                   )
 
 >>> Graph().Bifacial_azimuth_test(location)
 
@@ -403,7 +415,9 @@ time
                               losses=5,
                               number_of_modules=20
                               )
+
 >>> inverter, module = Inverters().auto_select_inverter(module)
+
 >>> Graph().Efficiency_curve_of_inverter(inverter)
 
 ```

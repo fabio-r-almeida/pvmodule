@@ -66,7 +66,7 @@ class Graph():
     plt.tight_layout()
     return data
 
-  def Comparison(self,location, bifacial_data, normal_data, column_name):
+  def Comparison(self , location, bifacial_data, normal_data, column_name):
     import numpy as np
     irradiance_1 = bifacial_data
     irradiance_2 = normal_data
@@ -284,7 +284,7 @@ class Graph():
       if hatches_i == len(hatches):
         hatches_i = 0
 
-    plt.title(f"Average Yearly irradiance - {data['month'].values[0]}", fontsize= 10)
+    plt.title(f"Average Monthly irradiance - {data['month'].values[0]}", fontsize= 10)
     ax.set_ylabel('W/m2', fontsize= 10)
     ax.set_xlabel('time h', fontsize= 10)
     plt.grid(color = 'black', linestyle = '--', linewidth = 0.5)

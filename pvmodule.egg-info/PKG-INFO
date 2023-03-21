@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: pvmodule
-Version: 0.0.135
+Version: 0.0.136
 Summary: A library used to simulate photovoltaic energy production using PVGIS
 Home-page: UNKNOWN
 Author: Fábio Almeida
@@ -368,7 +368,7 @@ Description: # PV-Module
                                                         location, 
                                                         panel_tilt = 35, 
                                                         azimuth=0)
-        >>> Graph().plot_multiple(
+        >>> Graph().plot_multiple_monthly(
                                 [bi_data.where(bi_data["month"]==7), normal_data.where(normal_data["month"]==7)],
                                 'Global irradiance on a fixed plane'
                                 )
