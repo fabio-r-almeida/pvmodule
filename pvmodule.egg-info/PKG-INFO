@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: pvmodule
-Version: 0.0.136
+Version: 0.0.137
 Summary: A library used to simulate photovoltaic energy production using PVGIS
 Home-page: UNKNOWN
 Author: Fábio Almeida
@@ -361,6 +361,10 @@ Description: # PV-Module
         >>> from pvmodule.pvgis import PVGIS
         >>> from pvmodule.graph import Graph
         
+        >>> location = Location().set_location(latitude = 38.6973,
+                                           longitude = -9.30836
+                                           )
+        
         >>> _,bi_data,_ = PVGIS().retrieve_all_year_bifacial(
                                                             location,
                                                             azimuth = 90)
@@ -383,6 +387,10 @@ Description: # PV-Module
         >>> from pvmodule.location import Location
         >>> from pvmodule.graph import Graph
         
+        >>> location = Location().set_location(latitude = 38.6973,
+                                           longitude = -9.30836
+                                           )
+        
         >>> Graph().azimuth_test(location)
         
         ```
@@ -392,6 +400,10 @@ Description: # PV-Module
         ``` python
         >>> from pvmodule.location import Location
         >>> from pvmodule.graph import Graph
+        
+        >>> location = Location().set_location(latitude = 38.6973,
+                                           longitude = -9.30836
+                                           )
         
         >>> Graph().Bifacial_azimuth_test(location)
         
@@ -411,7 +423,9 @@ Description: # PV-Module
                                       losses=5,
                                       number_of_modules=20
                                       )
+        
         >>> inverter, module = Inverters().auto_select_inverter(module)
+        
         >>> Graph().Efficiency_curve_of_inverter(inverter)
         
         ```

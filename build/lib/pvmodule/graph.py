@@ -26,6 +26,7 @@ class Graph():
     ax.set_title(f'Heatmap of the yearly irradiance for Lat: {location.latitude } Long: {location.longitude }')
     ax.grid()
     plt.tight_layout()
+    fig.savefig('Heatmap.png', facecolor=fig.get_facecolor(), edgecolor='none')
     return data
 
   def Bifacial_Heatmap(self, location, surface_azimuth:int = 90, year:int=2020): 
@@ -64,6 +65,8 @@ class Graph():
     ax.set_title(f'Heatmap of the yearly irradiance for Lat: {location.latitude } Long: {location.longitude }')
     ax.grid()
     plt.tight_layout()
+    fig.savefig('Bifacial_Heatmap.png', facecolor=fig.get_facecolor(), edgecolor='none')
+
     return data
 
   def Comparison(self , location, bifacial_data, normal_data, column_name):
@@ -122,7 +125,7 @@ class Graph():
     i = 0
     list_of_values = []
     for bar in bars:
-      list_of_values.append(f'{round(df.iloc[i], 1)} W/m2')
+      list_of_values.append(f'{round(df.iloc[i], 1)} $W/m^2$')
       if bar.get_height() < 0:
         ax.text(
             bar.get_x() + bar.get_width() / 2,
@@ -147,8 +150,7 @@ class Graph():
 
     # Add labels and a title.
     ax.set_ylabel('Irradiance %', labelpad=15, color='#333333', fontsize= 16)
-    ax.set_title(f'Vertical Bifacial versus Tilted Monofacial for Lat:{location.latitude} Long:{location.longitude}', pad=15, color='#333333',
-                weight='bold', fontsize= 16)
+    ax.set_title(f'Vertical Bifacial versus Tilted Monofacial for Lat:{location.latitude} Long:{location.longitude}', pad=15, color='#333333', fontsize= 16)
 
     gains = round((irradiance_1[column_name].sum() / irradiance_2[column_name].sum()) * 100 - 100,2) 
     gains_watts = round((irradiance_1[column_name].sum() - irradiance_2[column_name].sum())/1000,2)
@@ -175,13 +177,14 @@ class Graph():
 
   
     if gains < 0:
-      ax.text(0.1, 0.80, f'Total loss of {gains} %\nApproximately of {gains_watts} kW/m2\nBifacial Energy of {bifacial_energy} kW/m2 \nNormal Energy of {monofacial_energy} kW/m2',
+      ax.text(0.1, 0.80, f'Total loss of {gains} %\nApproximately of {gains_watts} k$W/m^2$\nBifacial Energy of {bifacial_energy} k$W/m^2$ \nNormal Energy of {monofacial_energy} k$W/m^2$',
         style='italic', bbox={'facecolor': 'red', 'alpha': 0.2, 'pad': 10}, transform=plt.gcf().transFigure)
     else:
-      ax.text(0.1,0.80, f'Total gain of {gains} %\nApproximately of {gains_watts} kW/m2\nBifacial Energy of {bifacial_energy} kW/m2 \nNormal Energy of {monofacial_energy} kW/m2',
+      ax.text(0.1,0.80, f'Total gain of {gains} %\nApproximately of {gains_watts} k$W/m^2$\nBifacial Energy of {bifacial_energy} k$W/m^2$ \nNormal Energy of {monofacial_energy} k$W/m^2$',
         style='italic', bbox={'facecolor': 'green', 'alpha': 0.2, 'pad': 10}, transform=plt.gcf().transFigure)
 
     fig.tight_layout()
+    fig.savefig('Comparison.png', facecolor=fig.get_facecolor(), edgecolor='none')
     return comparison
 
   
@@ -251,6 +254,7 @@ class Graph():
       plt.ylabel('Efficiency (%)', fontsize= 16)
       plt.xlabel('Power (kW)', fontsize= 16)
       plt.show()
+      fig.savefig('Efficiency_curve_of_inverter.png', facecolor=fig.get_facecolor(), edgecolor='none')
       return [xx, f_min(xx),f_nom(xx),f_max(xx)]
 
   def plot_multiple_monthly(self, data_list, column_name):
@@ -285,10 +289,11 @@ class Graph():
         hatches_i = 0
 
     plt.title(f"Average Monthly irradiance - {data['month'].values[0]}", fontsize= 10)
-    ax.set_ylabel('W/m2', fontsize= 10)
+    ax.set_ylabel('$W/m^2$', fontsize= 10)
     ax.set_xlabel('time h', fontsize= 10)
     plt.grid(color = 'black', linestyle = '--', linewidth = 0.5)
     plt.xticks(rotation=45)
+    fig.savefig('plot_multiple_monthly.png', facecolor=fig.get_facecolor(), edgecolor='none')
 
   def Bifacial_azimuth_test(self, location):
     print("Warning, this might take a while.")
@@ -375,11 +380,12 @@ class Graph():
 
     plt.title(f"Average Monthly irradiance for Lat:{location.latitude} Long:{location.longitude}", fontsize= 16)
     ax.legend(Legenda, prop={'size': 16})
-    ax.set_ylabel('Irradiance W/m2', fontsize= 16)
+    ax.set_ylabel('Irradiance $W/m^2$', fontsize= 16)
     ax.set_xlabel('Azimuth angle (degree)', fontsize= 16)
     plt.grid(color = 'black', linestyle = '--', linewidth = 0.5)
     x_tick =  list(dict.fromkeys(range(-90,91,5)))
     plt.xticks(x_tick, x_tick)
+    fig.savefig('Bifacial_azimuth_test.png', facecolor=fig.get_facecolor(), edgecolor='none')
     return output
 
 
@@ -468,11 +474,12 @@ class Graph():
 
     plt.title(f"Average Monthly irradiance for Lat:{location.latitude} Long:{location.longitude}", fontsize= 16)
     ax.legend(Legenda, prop={'size': 16})
-    ax.set_ylabel('Irradiance W/m2', fontsize= 16)
+    ax.set_ylabel('Irradiance $W/m^2$', fontsize= 16)
     ax.set_xlabel('Azimuth angle (degree)', fontsize= 16)
     plt.grid(color = 'black', linestyle = '--', linewidth = 0.5)
     x_tick =  list(dict.fromkeys(range(-90,91,5)))
     plt.xticks(x_tick, x_tick)
+    fig.savefig('azimuth_test.png', facecolor=fig.get_facecolor(), edgecolor='none')
     return output
   def scatter_map(self):
     
@@ -496,10 +503,11 @@ class Graph():
     # scatterplot
     plt.scatter(x, y, c=z, cmap="rainbow")
     plt.ylabel("Power Output (W)")
-    plt.xlabel("Irradiance (W/m2)")
+    plt.xlabel("Irradiance ($W/m^2$)")
       
     plt.colorbar(label="Temperature (°C)", orientation="vertical")
     plt.show()
+    fig.savefig('scatter_map.png', facecolor=fig.get_facecolor(), edgecolor='none')
 
   def plot_multiple_yearly(self,data_list, column_name):
     
@@ -520,7 +528,7 @@ class Graph():
         data = data.dropna()
         month_data = data.loc[data['month'] == month]      
         month_data[column_name].plot(figsize=(11.69,8.27), ax=ax, fontsize=10)
-        list_of_values.append(f'{round(month_data[column_name].sum(),2)} W/m2')
+        list_of_values.append(f'{round(month_data[column_name].sum(),2)} $W/m^2$')
 
       colors =[cm(1.*i/NUM_COLORS) for i in range(NUM_COLORS)]
       colwidths = 0.92 * (1/12)
@@ -540,10 +548,12 @@ class Graph():
       
       ax.legend(header, prop={'size': 16},loc=2 )
       plt.title(f"Yearly irradiance for {location}", fontsize= 16)
-      ax.set_ylabel('Irradiance W/m2', fontsize= 16)
+      ax.set_ylabel('Irradiance $W/m^2$', fontsize= 16)
       ax.set_xlabel('time in hours', fontsize= 16)
       plt.grid(color = 'black', linestyle = '--', linewidth = 0.5)
       plt.xticks(rotation=45)
       the_table.set_fontsize(16)
       the_table.scale(2.88,2.88)
+      fig.savefig('plot_multiple_yearly.png', facecolor=fig.get_facecolor(), edgecolor='none')
+      
 

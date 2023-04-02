@@ -48,7 +48,7 @@ class PVGIS():
         self.showtemperatures = None  # ,showtemperatures
         self.localtime = None  # localtime
 
-    def retrieve_hourly( self, latitude: float, longitude: float, usehorizon: int = 1, userhorizon: int = None, raddatabase: str = None, startyear: int = 2020, endyear: int = 2020, pvcalculation: int = 0, peakpower: float = None, pvtechchoice: str = "crystSi", mountingplace: str = "free", loss: float = None, trackingtype: int = 0, surface_tilt: float = 0, surface_azimuth: float = 0, optimalinclination: int = 0, optimalangles: int = 0, components: int = 0, outputformat: str = "json", url: str = "http://re.jrc.ec.europa.eu/api/v5_2/") -> object:
+    def retrieve_hourly( self, latitude: float, longitude: float, usehorizon: int = 1, userhorizon: int = None, raddatabase: str = 'PVGIS-ERA5', startyear: int = 2020, endyear: int = 2020, pvcalculation: int = 0, peakpower: float = None, pvtechchoice: str = "crystSi", mountingplace: str = "free", loss: float = None, trackingtype: int = 0, surface_tilt: float = 0, surface_azimuth: float = 0, optimalinclination: int = 0, optimalangles: int = 0, components: int = 0, outputformat: str = "json", url: str = "http://re.jrc.ec.europa.eu/api/v5_2/") -> object:
         """
         Hourly Data: This method retrieves real-world data using the PVGIS-API.
         ...
@@ -183,7 +183,7 @@ class PVGIS():
 
         return self.data
 
-    def retrieve_hourly_bifacial( self, latitude: float, longitude: float, usehorizon: int = 1, userhorizon: int = None, raddatabase: str = None, startyear: int = 2020, endyear: int = 2020, pvcalculation: int = 0, peakpower: float = None, pvtechchoice: str = "crystSi", mountingplace: str = "free", loss: float = None, trackingtype: int = 0, surface_tilt: float = 0, surface_azimuth: float = 0, optimalinclination: int = 0, optimalangles: int = 0, components: int = 0, outputformat: str = "json", url: str = "http://re.jrc.ec.europa.eu/api/v5_2/") -> object:
+    def retrieve_hourly_bifacial( self, latitude: float, longitude: float, usehorizon: int = 1, userhorizon: int = None, raddatabase: str = 'PVGIS-ERA5', startyear: int = 2020, endyear: int = 2020, pvcalculation: int = 0, peakpower: float = None, pvtechchoice: str = "crystSi", mountingplace: str = "free", loss: float = None, trackingtype: int = 0, surface_tilt: float = 0, surface_azimuth: float = 0, optimalinclination: int = 0, optimalangles: int = 0, components: int = 0, outputformat: str = "json", url: str = "http://re.jrc.ec.europa.eu/api/v5_2/") -> object:
         
         panel_tilt = 90
         azimuth_backsheet = int(surface_azimuth) + 180
@@ -541,6 +541,15 @@ class PVGIS():
     def retrieve_all_year(self, location, panel_tilt, azimuth):
       import pandas as pd
       import concurrent.futures
+
+      if panel_tilt == 'Optimal':
+        input , _, _ = PVGIS().retrieve_hourly(
+                                            latitude=location.latitude,
+                                            longitude=location.longitude,
+                                            optimalinclination=1
+                                            )
+        panel_tilt = input['mounting_system']['fixed']['slope']['value']
+        print("Slope of " + str(panel_tilt))
 
       def load_data(location,panel_tilt, azimuth, month_):
         inputs, data , metadata = PVGIS().retrieve_daily(
