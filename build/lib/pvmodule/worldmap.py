@@ -11,7 +11,7 @@ class WorldMap():
       return cities
   def plot(self):
     # Importing libraries
-    !pip install geopandas
+    #!pip install geopandas
     import matplotlib.pyplot as plt
     import pandas as pd
     import geopandas as gpd
