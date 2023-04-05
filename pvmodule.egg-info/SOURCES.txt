@@ -9,6 +9,7 @@ pvmodule/module.py
 pvmodule/pvgis.py
 pvmodule/simulation.py
 pvmodule/system.py
+pvmodule/worldmap.py
 pvmodule.egg-info/PKG-INFO
 pvmodule.egg-info/SOURCES.txt
 pvmodule.egg-info/dependency_links.txt

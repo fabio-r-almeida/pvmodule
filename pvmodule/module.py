@@ -45,6 +45,7 @@ class Modules():
       module = module.loc[module['Model Number'] == model]
       module = module.fillna(0)
       module = module.values.tolist()
+      efficiency = (module[0][3]/1000) / (module[0][19]*module[0][18])
 
       return      {'name': module[0][0]+' '+module[0][1],
                   'height': module[0][19],
@@ -63,6 +64,7 @@ class Modules():
                   'BIPV': module[0][9],
                   'ISC_rear': module[0][20],
                   'Pmax_rear': module[0][21],
+                  'efficiency': efficiency,
                   'first_year_degradation': first_year_degradation,
                   'annual_degradation': annual_degradation }
 

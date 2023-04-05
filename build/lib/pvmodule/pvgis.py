@@ -549,7 +549,7 @@ class PVGIS():
                                             optimalinclination=1
                                             )
         panel_tilt = input['mounting_system']['fixed']['slope']['value']
-        print("Slope of " + str(panel_tilt))
+        #print("Slope of " + str(panel_tilt))
 
       def load_data(location,panel_tilt, azimuth, month_):
         inputs, data , metadata = PVGIS().retrieve_daily(

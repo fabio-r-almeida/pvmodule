@@ -19,20 +19,28 @@ class System():
         T_amb = Irradiance[temperature_column_name]
 
 
-        wind_speed_2m = wind_speed* (2/10)**0.22
+        wind_speed_2m = wind_speed* (2/10)**0.14
         T_module = T_amb + (Irradiance[irradiance_column_name]) * e** (psi1 + psi2*wind_speed_2m)
         T_cell = T_module + ((Irradiance[irradiance_column_name])/1000) * delta_t
 
         return T_cell
 
+    def _dc_losses(self, module, cable_lenght, cable_section, cable_resistivity):
 
-    def dc_production(self, module, Irradiance, irradiance_column_name, temperature_column_name, wind_speed_column_name):
+      cable_losses = (module['isc']**2) * (cable_resistivity * cable_lenght/(cable_section*10**(-6)))
+
+      return cable_losses
+
+    def dc_production(self, module, Irradiance, irradiance_column_name, temperature_column_name, wind_speed_column_name, cable_lenght:float = 5, cable_section:float = 4, cable_resistivity:float=0.000000017):
 
       #Single Point Power Model
       import pandas as pd
+      import numpy as np
       import math
 
+    
       T_cell = System()._Tcell(Irradiance,temperature_column_name, wind_speed_column_name , irradiance_column_name)
+      cable_losses = System()._dc_losses(module, cable_lenght=cable_lenght, cable_section=cable_section, cable_resistivity=cable_resistivity)
 
       FF = (module['pdc'])/(module['uoc']*module['isc'])
 
@@ -43,11 +51,11 @@ class System():
 
       PV_out_Total = PV_out_Total * Irradiance[irradiance_column_name] / 1000
 
-
       #losses
       losses = 1 - module['losses']/100
 
-      PV_out_Total = PV_out_Total * (losses)
+      PV_out_Total = PV_out_Total * ( losses ) - cable_losses 
+      PV_out_Total = PV_out_Total.clip(lower=0)
 
       estimated_current_total = ISC# * Irradiance[irradiance_column_name]/1000
 
@@ -58,11 +66,12 @@ class System():
       PV_output_total_system.columns = ['Total DC Power']
 
       PV_output_total_system['Total Irradiance'] = Irradiance[irradiance_column_name]
+      PV_output_total_system['Irradiance w/m2'] = Irradiance[irradiance_column_name]
 
       PV_output_total_system['Total U (V)'] = PV_output_total_system['Total DC Power']/estimated_current_total
       PV_output_total_system['Total I (A)'] = estimated_current_total
 
-      PV_output_total_system['Watt per Watt_peak'] = (PV_out_Total/(module['number_of_modules'])) / module['pdc']
+      PV_output_total_system['Watt per Watt_peak'] = (PV_out_Total) / module['pdc']
 
       PV_output_total_system = PV_output_total_system.fillna(0)
       PV_output_total_system['Month'] = Irradiance['month']
@@ -75,10 +84,19 @@ class System():
 
 
 ############################################
-# DC Power calculation.
-    def ac_production(self, dc_production, inverter):
+# AC Power calculation.
+
+    def _ac_losses(self, module, cable_lenght, cable_section, cable_resistivity):
+
+      cable_losses = (module['isc']**2) * (cable_resistivity * cable_lenght/(cable_section*10**(-6)))/1000
+      return cable_losses
+
+
+    def ac_production(self, dc_production, inverter, module, cable_lenght:float = 20, cable_section:float = 4, cable_resistivity:float=0.000000017):
       ac_production = dc_production
       ac_production['Total DC Power'] = ac_production['Total DC Power']/1000
+      cable_losses = System()._ac_losses(module, cable_lenght=cable_lenght, cable_section=cable_section, cable_resistivity=cable_resistivity)
+
       
       import pandas as pd
       inverter_efficiency = pd.DataFrame()
@@ -101,13 +119,13 @@ class System():
 
 
       import numpy as np
-      z_min = np.polyfit(x, y_min, 3)
+      z_min = np.polyfit(x, y_min, 4)
       f_min = np.poly1d(z_min)
 
-      z_nom = np.polyfit(x, y_nom, 3)
+      z_nom = np.polyfit(x, y_nom, 4)
       f_nom = np.poly1d(z_nom)
 
-      z_max = np.polyfit(x, y_max, 3)
+      z_max = np.polyfit(x, y_max, 4)
       f_max = np.poly1d(z_max)
 
       def test_voltage(voltage):
@@ -121,16 +139,43 @@ class System():
         return eff
 
 
-      ac_production['Efficiency'] = ac_production['Total DC Power'].apply(lambda x: test_voltage(x) )
-      ac_production['Total AC Power'] = ac_production['Total DC Power']*ac_production['Efficiency']/100
-      ac_production['Watt per Watt_peak AC'] = ac_production['Watt per Watt_peak']*ac_production['Efficiency']/100
+      ac_production['Efficiency'] = ac_production['Total DC Power'].apply(lambda x: test_voltage(x))
+      ac_production['Total AC Power'] = ac_production['Total DC Power']*ac_production['Efficiency']/100 - cable_losses
+      ac_production['Watt per Watt_peak AC'] = ac_production['Watt per Watt_peak']*ac_production['Efficiency']/100 - cable_losses 
 
-
-
-      
+      ac_production['Watt per Watt_peak AC'] = ac_production['Watt per Watt_peak AC'].clip(lower=0)
+      ac_production['Total AC Power'] = ac_production['Total AC Power'].clip(lower=0)
+   
 
       return ac_production
+    def Yearly_Stats(self, ac_production, module):
+      ac = ac_production
+      days_in_a_month = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+      ac['Days in a Month'] = ac['Month'].apply(lambda x: days_in_a_month[int(x)-1])
 
+
+      ac['Monthly AC kWh'] = ac['Total AC Power']*ac['Days in a Month']
+      ac['Monthly Irradiance'] = ac['Irradiance w/m2']*ac['Days in a Month']
+
+      print(f"Yearly Total Energy Production (kWh) {ac['Monthly AC kWh'].sum()}")
+      print(f"Yearly Total Energy Production (kWh/kWp) {ac['Monthly AC kWh'].sum()/((module['pdc']*module['number_of_modules'])/1000)}")
+      print(f"Yearly in-plane irradiation [kWh/m2]: {ac['Monthly Irradiance'].sum()/1000}")
+
+      #performance indicators
+      System_efficiency = (ac['Monthly AC kWh'].sum()) / ((ac['Monthly Irradiance'].sum()*module['length']*module['height'])/1000)
+
+      print(f'System Efficiency {System_efficiency*100} %')
+
+      Capacity_factor = (ac['Monthly AC kWh'].sum()/((module['pdc']*module['number_of_modules'])/1000)) / (module['number_of_modules']*8760)
+
+      print(f'Capacity Factor {Capacity_factor*100} %')
+
+      Performance_ratio = (ac['Monthly AC kWh'].sum()) / (((ac['Monthly Irradiance'].sum()*module['length']*module['height'])/1000)*module['efficiency'])
+      print(f'Performance Ratio {Performance_ratio*100} %')
+      print('')
+
+
+      #financial indicators
 
 
 

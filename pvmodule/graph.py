@@ -108,7 +108,7 @@ class Graph():
     import matplotlib.pyplot as plt
     fig, ax = plt.subplots(figsize=(15,7))
     NUM_COLORS = 12
-    cm = plt.get_cmap('rainbow')
+    cm = plt.get_cmap('brg')
     ax.set_prop_cycle(color=[cm(1.*i/NUM_COLORS) for i in range(NUM_COLORS)])
     colors =[cm(1.*i/NUM_COLORS) for i in range(NUM_COLORS)]
     bars = ax.bar(
@@ -501,7 +501,7 @@ class Graph():
     fig, ax = plt.subplots(figsize=(15,7))
 
     # scatterplot
-    plt.scatter(x, y, c=z, cmap="rainbow")
+    plt.scatter(x, y, c=z, cmap="brg")
     plt.ylabel("Power Output (W)")
     plt.xlabel("Irradiance ($W/m^2$)")
       
@@ -518,16 +518,25 @@ class Graph():
       pd.options.mode.chained_assignment = None 
       fig, ax = plt.subplots()
       NUM_COLORS = 12
-      cm = plt.get_cmap('rainbow')
+      cm = plt.get_cmap('brg')
       ax.set_prop_cycle(color=[cm(1.*i/NUM_COLORS) for i in range(NUM_COLORS)])
       header = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dec"]
+
+	
+      # twin object for two different y-axis on the sample plot
+      ax2=ax.twinx()
+      # make a plot with different y-axis using second axis object
+      ax2.set_ylabel('Temperature $\degree C$', fontsize= 20)
+
 
       list_of_values = []
       for month in range(1,13,1):
 
         data = data.dropna()
         month_data = data.loc[data['month'] == month]      
-        month_data[column_name].plot(figsize=(11.69,8.27), ax=ax, fontsize=10)
+        month_data[column_name].plot(figsize=(11.69,8.27), ax=ax, fontsize=20, label=header[month-1])
+        month_data['2m Air Temperature'].plot(figsize=(11.69,8.27), ax=ax2, fontsize=20, label=header[month-1], marker='*', linestyle='')
+
         list_of_values.append(f'{round(month_data[column_name].sum(),2)} $W/m^2$')
 
       colors =[cm(1.*i/NUM_COLORS) for i in range(NUM_COLORS)]
@@ -543,17 +552,99 @@ class Graph():
                             rowLoc = 'center',
                             colColours='white',
                             colWidths=[colwidths for x in ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dec"]],
-                            bbox=[1.1, 0, 0.25, 1]
+                            bbox=[1.2, 0, 0.25, 1]
                             )
-      
-      ax.legend(header, prop={'size': 16},loc=2 )
-      plt.title(f"Yearly irradiance for {location}", fontsize= 16)
-      ax.set_ylabel('Irradiance $W/m^2$', fontsize= 16)
-      ax.set_xlabel('time in hours', fontsize= 16)
+      ax.legend(header, prop={'size': 20},loc=2 )
+      ax.legend(bbox_to_anchor=(0.1, 1))
+      plt.title(f"Yearly irradiance for {location}", fontsize= 20)
+      ax.set_ylabel('Irradiance $W/m^2$', fontsize= 20)
+      ax.set_xlabel('time in hours', fontsize= 20)
       plt.grid(color = 'black', linestyle = '--', linewidth = 0.5)
       plt.xticks(rotation=45)
-      the_table.set_fontsize(16)
+      the_table.set_fontsize(20)
       the_table.scale(2.88,2.88)
-      fig.savefig('plot_multiple_yearly.png', facecolor=fig.get_facecolor(), edgecolor='none')
+
+  def plot_power_multiple_yearly(self,data_list, column_name, module):
+    
+    import matplotlib.pyplot as plt
+    import pandas as pd
+    import numpy as np
+    for location, data in data_list:
+      pd.options.mode.chained_assignment = None 
+      fig, ax = plt.subplots()
+      NUM_COLORS = 12
+      cm = plt.get_cmap('brg')
+      ax.set_prop_cycle(color=[cm(1.*i/NUM_COLORS) for i in range(NUM_COLORS)])
+      header = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dec"]
+      days_in_a_month = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+
+      list_of_values = []
+      list_of_peak_hours = []
+      Total_AC_Power = 0
+      Total_DC_Power = 0
+      Total_PeakHours_Yearly = 0
+
+      for month in range(1,13,1):
+
+        data = data.dropna()
+        month_data = data.loc[data['Month'] == month]      
+        month_data[column_name].plot(figsize=(11.69,8.27), ax=ax, fontsize=14, label=header[month-1])
+        #month_data['T cell'].plot(figsize=(11.69,8.27), ax=ax2, fontsize=20, label=header[month-1], marker='*', linestyle='')
+
+        Total_power_per_month = 0
+
+        peak_hours = 0
+        for index, row in month_data.iterrows():
+          Total_power_per_month += row['Total AC Power']*1000*days_in_a_month[month-1]
+
+        for index, row in month_data.iterrows():
+          if Total_power_per_month - module['pdc']*days_in_a_month[month-1] > 0:
+            Total_power_per_month -= module['pdc']*days_in_a_month[month-1]
+            peak_hours += 1
+          else:
+            peak_hours += Total_power_per_month/(module['pdc']*days_in_a_month[month-1])
+            Total_power_per_month = 0
+
+        Total_AC_Power += round(month_data["Total AC Power"].sum()*days_in_a_month[month-1],2)
+        Total_DC_Power += round(month_data["Total DC Power"].sum()*days_in_a_month[month-1],2)
+
+        list_of_values.append(f'{round(month_data["Total AC Power"].sum()*days_in_a_month[month-1],2)} $kW$')
+        list_of_peak_hours.append(f'{round(peak_hours*days_in_a_month[month-1],2)} hours')
+        Total_PeakHours_Yearly += round(peak_hours*days_in_a_month[month-1],2)
+
+
+      print(f"Location: {location}\n Total_DC_Power per Wp: {Total_DC_Power/module['pdc']}\n Total_AC_Power per Wp: {Total_AC_Power/module['pdc']}\n Efficiency: {Total_AC_Power/Total_DC_Power}\n Total Peak hours per year: {Total_PeakHours_Yearly}")
+    
+    
+      colors =[cm(1.*i/NUM_COLORS) for i in range(NUM_COLORS)]
+      colwidths = 0.92 * (1/12)
+      celltext = [[el] for el in list_of_values]
+      celltext2 = [[el] for el in list_of_peak_hours]
+      celltext = []
+      for i in range(0,len(list_of_values)):
+        celltext.append([list_of_values[i],list_of_peak_hours[i]])
+
+      the_table = plt.table(cellText=celltext,
+                            colLabels=["AC Power","Peak Hours"],
+                            rowColours=colors,
+                            rowLabels=["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dec"],
+                            loc='right',
+                            cellLoc='center',
+                            rowLoc = 'center',
+                            colColours=['white','white'],
+                            colWidths=[colwidths for x in ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dec"]],
+                            bbox=[1.1, 0, 0.25, 1]
+                            )
+      ax.legend(header, prop={'size': 14},loc=2 )
+      ax.legend(bbox_to_anchor=(1, 1))
+      plt.title(f"Yearly Power production for {location}", fontsize= 14)
+      ax.set_ylabel('Power $W/W_p$', fontsize= 14)
+      ax.set_xlabel('time in hours', fontsize= 14)
+      plt.grid(color = 'black', linestyle = '--', linewidth = 0.5)
+      the_table.scale(2.88,2.88)
+      the_table.auto_set_font_size(False)
+      the_table.set_fontsize(11.5)
+
+
       
 
