@@ -6,4 +6,4 @@ from pvmodule.module import Modules
 from pvmodule.inverter import Inverters
 from pvmodule.irradiance import Irradiance
 from pvmodule.graph import Graph
-from pvmodule.worldmap import WorldMap
+#from pvmodule.worldmap import WorldMap
