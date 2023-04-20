@@ -71,7 +71,7 @@ class System():
       PV_output_total_system['Total U (V)'] = PV_output_total_system['Total DC Power']/estimated_current_total
       PV_output_total_system['Total I (A)'] = estimated_current_total
 
-      PV_output_total_system['Watt per Watt_peak'] = (PV_out_Total) / module['pdc']
+      PV_output_total_system['Watt per Watt_peak'] = PV_output_total_system['Total DC Power'] / (module['pdc']*module['number_of_modules'])
 
       PV_output_total_system = PV_output_total_system.fillna(0)
       PV_output_total_system['Month'] = Irradiance['month']
@@ -107,14 +107,14 @@ class System():
 
 
       voltage_list = []
-      min_voltage = inverter['Voltage Minimum (Vdc)'].values[0]
-      voltage_list.append(min_voltage)
+      min_power = inverter['Voltage Minimum (Vdc)'].values[0]
+      voltage_list.append(min_power)
 
-      nominal_voltage = inverter['Voltage Nominal (Vdc)'].values[0]
-      voltage_list.append(nominal_voltage)
+      nominal_power = inverter['Voltage Nominal (Vdc)'].values[0]
+      voltage_list.append(nominal_power)
 
-      max_voltage = inverter['Voltage Maximum (Vdc)'].values[0]
-      voltage_list.append(max_voltage)
+      max_power = inverter['Voltage Maximum (Vdc)'].values[0]
+      voltage_list.append(max_power)
 
 
 
@@ -128,20 +128,22 @@ class System():
       z_max = np.polyfit(x, y_max, 4)
       f_max = np.poly1d(z_max)
 
-      def test_voltage(voltage):
-        difference = abs(voltage - min_voltage)
-        eff = f_min(voltage)
-        if difference > abs(voltage - nominal_voltage):
-          eff = f_nom(voltage)
-          difference = abs(voltage - nominal_voltage)
-        if difference > abs(voltage - max_voltage):
-          eff = f_max(voltage)
+      def test_power(power):
+        difference = abs(power - min_power)
+        eff = f_min(power)
+        if difference > abs(power - nominal_power):
+          eff = f_nom(power)
+          difference = abs(power - nominal_power)
+        if difference > abs(power - max_power):
+          eff = f_max(power)
+        if power > max(x):
+          eff = f_max(max(x))
         return eff
 
 
-      ac_production['Efficiency'] = ac_production['Total DC Power'].apply(lambda x: test_voltage(x))
+      ac_production['Efficiency'] = ac_production['Total DC Power'].apply(lambda x: test_power(x))
       ac_production['Total AC Power'] = ac_production['Total DC Power']*ac_production['Efficiency']/100 - cable_losses
-      ac_production['Watt per Watt_peak AC'] = ac_production['Watt per Watt_peak']*ac_production['Efficiency']/100 - cable_losses 
+      ac_production['Watt per Watt_peak AC'] = ac_production['Total AC Power'] / ((module['pdc']*module['number_of_modules'])/1000)
 
       ac_production['Watt per Watt_peak AC'] = ac_production['Watt per Watt_peak AC'].clip(lower=0)
       ac_production['Total AC Power'] = ac_production['Total AC Power'].clip(lower=0)
@@ -162,15 +164,15 @@ class System():
       print(f"Yearly in-plane irradiation [kWh/m2]: {ac['Monthly Irradiance'].sum()/1000}")
 
       #performance indicators
-      System_efficiency = (ac['Monthly AC kWh'].sum()) / ((ac['Monthly Irradiance'].sum()*module['length']*module['height'])/1000)
+      System_efficiency = (ac['Monthly AC kWh'].sum()) / ((ac['Monthly Irradiance'].sum()*module['length']*module['height']*module['number_of_modules'])/1000)
 
       print(f'System Efficiency {System_efficiency*100} %')
 
-      Capacity_factor = (ac['Monthly AC kWh'].sum()/((module['pdc']*module['number_of_modules'])/1000)) / (module['number_of_modules']*8760)
+      Capacity_factor = (ac['Monthly AC kWh'].sum()/((module['pdc'])/1000)) / (module['number_of_modules']*8760)
 
       print(f'Capacity Factor {Capacity_factor*100} %')
 
-      Performance_ratio = (ac['Monthly AC kWh'].sum()) / (((ac['Monthly Irradiance'].sum()*module['length']*module['height'])/1000)*module['efficiency'])
+      Performance_ratio = (ac['Monthly AC kWh'].sum()) / (((ac['Monthly Irradiance'].sum()*module['length']*module['height']*module['number_of_modules'])/1000)*module['efficiency'])
       print(f'Performance Ratio {Performance_ratio*100} %')
       print('')
 
