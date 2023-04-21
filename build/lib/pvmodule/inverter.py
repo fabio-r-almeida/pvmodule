@@ -75,7 +75,7 @@ class Inverters():
         module['number_of_strings'] = round(inverter['Max strings input'].iloc[0],0)
         module['number_of_modules'] = module['modules_per_string']*module['number_of_strings']
         return  inverter, module
-      return [], module
+      return pd.DataFrame(), module
       class NoInverterFound(Exception):
         pass
       raise NoInverterFound("There is no compatible inverter.")
