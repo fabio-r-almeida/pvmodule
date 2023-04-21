@@ -45,6 +45,6 @@ timeout 2
 
 git add -A
 git commit -m "Automatic Push"
-git pull origin AutoUpdate
-git push -u origin AutoUpdate 
+git pull origin main
+git push -u origin main 
 

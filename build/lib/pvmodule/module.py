@@ -30,9 +30,6 @@ class Modules():
 
       modules = modules.loc[modules['Short Side'] != str('nan')]
 
-      from tabulate import tabulate
-      if print_data:
-        print(tabulate(modules, headers='keys', tablefmt='psql'))
       return modules
 
     def module(self,model:str ,number_of_modules:int=1, modules_per_string:int=1, number_of_strings:int=1,losses:float=0, first_year_degradation:float=2,annual_degradation:float=0.33, url: str='https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/PV_Modules.csv') -> dict:

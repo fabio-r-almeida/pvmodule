@@ -43,9 +43,6 @@ class Inverters():
         inverters = inverters.loc[inverters['Nominal Voltage (Vac)'] == int(vac)]
       if pmax != None:
         inverters = inverters.loc[inverters['Maximum Continuous Output Power (kW)'] == int(pmax)]
-      from tabulate import tabulate
-      if print_list:
-        print(tabulate(inverters, headers='keys', tablefmt='psql'))
 
       return inverters
 
