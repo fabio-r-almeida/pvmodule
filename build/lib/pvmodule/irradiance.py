@@ -489,7 +489,6 @@ class Irradiance():
     This method returns a list of albedos for specific surfaces.
     """
     import pandas as pd
-    from tabulate import tabulate
     albedo_list = pd.read_csv(self.url).replace(" ", "")
     return albedo_list
 
