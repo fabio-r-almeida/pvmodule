@@ -44,8 +44,7 @@ twine upload dist/* -u Fabio_R_Almeida
 timeout 2
 
 git add -A
-timeout 2
 git commit -m "Automatic Push"
-timeout 2
-git push -u origin AutoUpdate
+git pull --rebase origin AutoUpdate
+git push -u origin AutoUpdate 
 
