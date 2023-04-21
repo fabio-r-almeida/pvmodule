@@ -26,8 +26,6 @@ class Modules():
 
       if BIPV != None:
         modules = modules.loc[modules['BIPV'] == str(BIPV)]
-
-
       modules = modules.loc[modules['Short Side'] != str('nan')]
 
       return modules

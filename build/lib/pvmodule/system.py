@@ -176,6 +176,8 @@ class System():
       print(f'Performance Ratio {Performance_ratio*100} %')
       print('')
 
+      return ac['Monthly AC kWh'].sum(),  ac['Monthly AC kWh'].sum()/((module['pdc']*module['number_of_modules'])/1000) , ac['Monthly Irradiance'].sum()/1000, System_efficiency*100, Capacity_factor*100, Performance_ratio*100
+
 
       #financial indicators
 
