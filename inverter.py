@@ -1,5 +1,4 @@
 #@title FINAL (TESE) Inverters class { display-mode: "form" }
-
 class Inverters():
     def __init__(self, url:str='https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/CEC_Inverters.csv'):
       self.url = 'https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/CEC_Inverters.csv'
@@ -44,9 +43,6 @@ class Inverters():
         inverters = inverters.loc[inverters['Nominal Voltage (Vac)'] == int(vac)]
       if pmax != None:
         inverters = inverters.loc[inverters['Maximum Continuous Output Power (kW)'] == int(pmax)]
-      from tabulate import tabulate
-      if print_list:
-        print(tabulate(inverters, headers='keys', tablefmt='psql'))
 
       return inverters
 
