@@ -16,6 +16,12 @@ set /p COUNTER=<1_current_version.txt
         >>"%textFile%" echo(!line:%search%=%replace%!
         endlocal
     )
+for /f "tokens=1-4 delims=/ " %%i in ("%date%") do (
+     set month=%%j
+     set year=%%k
+     )
+set datestr= __version__="%year%.%month%.
+
 @echo off
 
     set "textFile=1_VERSION.txt"
@@ -23,7 +29,7 @@ set /p COUNTER=<1_current_version.txt
     for /f "delims=" %%i in ('type "%textFile%" ^& break ^> "%textFile%" ') do (
         set "line=%%i"
         setlocal enabledelayedexpansion
-        >>"%textFile%" echo(!line:%search%=%replace%!
+        >>"%textFile%" echo(%datestr%%replace%"!
         endlocal
     )
 
