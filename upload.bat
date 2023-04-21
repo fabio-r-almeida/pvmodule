@@ -20,7 +20,7 @@ for /f "tokens=1-4 delims=/ " %%i in ("%date%") do (
      set month=%%j
      set year=%%k
      )
-set datestr= __version__ = '%year%.%month%.
+set datestr=__version__ = '%year%.%month%.
 
 @echo off
 
