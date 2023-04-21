@@ -1,4 +1,5 @@
 #@title FINAL (TESE) Inverters class { display-mode: "form" }
+
 class Inverters():
     def __init__(self, url:str='https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/CEC_Inverters.csv'):
       self.url = 'https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/CEC_Inverters.csv'
