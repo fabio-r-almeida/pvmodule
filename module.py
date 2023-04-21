@@ -1,5 +1,5 @@
 #@title FINAL (TESE) - Module class { display-mode: "form" }
-__version__ = 0.0.147
+__version__ = '0.0.147'
 class Modules():
     def __init__(self, url:str='https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/PV_Modules.csv'):
       self.url = 'https://raw.githubusercontent.com/fabio-r-almeida/pvmodule/main/PV_Modules.csv'
