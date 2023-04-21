@@ -35,20 +35,13 @@ set datestr=__version__ = '%year%.%month%.
 
 <NUL set /p=%COUNTER%> 1_current_version.txt
 copy 1_VERSION.txt pvmodule_version.py
-timeout 2
 copy 1_SETUP_TEMPLATE.txt setup.py
-timeout 2
 
 @RD /S /Q "./build"
-timeout 2
 @RD /S /Q "./dist"
-timeout 2
 @RD /S /Q "./pvmodule.egg-info"
-timeout 2
 python setup.py sdist bdist_wheel
 twine upload dist/* -u Fabio_R_Almeida
-timeout 2
-
 git add -A
 git commit -m "Automatic Push"
 git pull origin main

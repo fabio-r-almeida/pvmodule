@@ -76,6 +76,7 @@ class Inverters():
         module['number_of_modules'] = module['modules_per_string']*module['number_of_strings']
         return  inverter, module
 
+      return []
       class NoInverterFound(Exception):
         pass
       raise NoInverterFound("There is no compatible inverter.")
