@@ -42,7 +42,8 @@ class Modules():
       module = module.values.tolist()
       efficiency = (module[0][3]/1000) / (module[0][19]*module[0][18])
 
-      return      {'name': module[0][0]+' '+module[0][1],
+      return      {'brand': module[0][0],
+                   'model': module[0][1],
                   'height': module[0][19],
                   'length': module[0][18],
                   'pdc': module[0][3],
