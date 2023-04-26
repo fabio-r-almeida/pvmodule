@@ -357,6 +357,7 @@ class PVGIS():
       """
         import requests
         import pandas as pd
+        import time
 
         self.month = month
         self.latitude = latitude
@@ -407,24 +408,32 @@ class PVGIS():
             url = url + f"&outputformat={self.outputformat}"
         self.url = url
 
-        data = requests.get(url).json()
+        data = requests.get(url)
+        status_code = data.status_code
+        if status_code == 429:
+          return '429','429','429'
+        data = data.json()
         
         try:
+           
             outputs = data["outputs"]["daily_profile"]
             outputs = pd.json_normalize(outputs)
             outputs = outputs.set_index("time")
-
             inputs = data["inputs"]
-
             meta = data["meta"]
 
-        except:
+        except Exception as e:
             class FaultyDataInput(Exception):
               pass
-            raise FaultyDataInput("Error with the PVGIS input.")
+            raise FaultyDataInput(f"Error with the PVGIS input:\n{e}")
 
 
         input_tmy, output_tmy, metadata_tmy = PVGIS().retrieve_tmy(latitude,longitude)
+        while input_tmy=='429':
+          time.sleep(1)
+          input_tmy, output_tmy, metadata_tmy = PVGIS().retrieve_tmy(latitude,longitude)
+
+
 
         output_tmy = output_tmy[output_tmy.index.month == self.month]
 
@@ -510,7 +519,11 @@ class PVGIS():
 
 
         self.url = url
-        data = requests.get(url).json()
+        data = requests.get(url)
+        status_code = data.status_code
+        if status_code == 429:
+          return '429','429','429'
+        data = data.json()
         try:
             outputs = data["outputs"]["tmy_hourly"]
             outputs = pd.json_normalize(outputs)
@@ -541,6 +554,7 @@ class PVGIS():
     def retrieve_all_year(self, location, panel_tilt, azimuth):
       import pandas as pd
       import concurrent.futures
+      import time
 
       if panel_tilt == 'Optimal':
         input , _, _ = PVGIS().retrieve_hourly(
@@ -559,6 +573,17 @@ class PVGIS():
                               angle=panel_tilt,
                               aspect=azimuth,
                               glob_2axis = 1)
+        while inputs == '429':
+          time.sleep(1)
+          inputs, data , metadata = PVGIS().retrieve_daily(
+                              location.latitude, 
+                              location.longitude, 
+                              month= month_,
+                              angle=panel_tilt,
+                              aspect=azimuth,
+                              glob_2axis = 1)
+                              
+                              
         return inputs , data , metadata
 
       MONTHS = [1,2,3,4,5,6,7,8,9,10,11,12]
@@ -598,6 +623,7 @@ class PVGIS():
     def retrieve_all_year_bifacial(self, location, azimuth):
       import pandas as pd
       import concurrent.futures
+      import time
 
       def load_data(location, azimuth, month_):
         azimuth_backsheet = int(azimuth) + 180
@@ -607,6 +633,15 @@ class PVGIS():
           azimuth_backsheet = azimuth_backsheet - 360
 
         inputs, data1 , metadata = PVGIS().retrieve_daily(
+                          location.latitude, 
+                          location.longitude, 
+                          month= month_, 
+                          angle = 90, 
+                          aspect = azimuth,
+                          glob_2axis = 1)
+        while inputs == '429':
+          time.sleep(1)
+          inputs, data1 , metadata = PVGIS().retrieve_daily(
                           location.latitude, 
                           location.longitude, 
                           month= month_, 
@@ -621,6 +656,17 @@ class PVGIS():
                           angle = 90, 
                           aspect = azimuth_backsheet, 
                           glob_2axis = 1)
+        
+        while inputs2 == '429':
+          time.sleep(1)
+          inputs2, data2 , metadata2 = PVGIS().retrieve_daily(
+                          location.latitude, 
+                          location.longitude, 
+                          month= month_, 
+                          angle = 90, 
+                          aspect = azimuth_backsheet, 
+                          glob_2axis = 1)
+        
     
         data2 = data2.drop(['month','T2m','WS10m'], axis=1)
         data = data1.add(data2, fill_value=0)
@@ -659,4 +705,3 @@ class PVGIS():
 
       self.data = inputs , data , metadata 
       return self.data
-
