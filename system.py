@@ -159,22 +159,22 @@ class System():
       ac['Monthly AC kWh'] = ac['Total AC Power']*ac['Days in a Month']
       ac['Monthly Irradiance'] = ac['Irradiance w/m2']*ac['Days in a Month']
 
-      print(f"Yearly Total Energy Production (kWh) {ac['Monthly AC kWh'].sum()}")
-      print(f"Yearly Total Energy Production (kWh/kWp) {ac['Monthly AC kWh'].sum()/((module['pdc']*module['number_of_modules'])/1000)}")
-      print(f"Yearly in-plane irradiation [kWh/m2]: {ac['Monthly Irradiance'].sum()/1000}")
+      #print(f"Yearly Total Energy Production (kWh) {ac['Monthly AC kWh'].sum()}")
+      #print(f"Yearly Total Energy Production (kWh/kWp) {ac['Monthly AC kWh'].sum()/((module['pdc']*module['number_of_modules'])/1000)}")
+      #print(f"Yearly in-plane irradiation [kWh/m2]: {ac['Monthly Irradiance'].sum()/1000}")
 
       #performance indicators
       System_efficiency = (ac['Monthly AC kWh'].sum()) / ((ac['Monthly Irradiance'].sum()*module['length']*module['height']*module['number_of_modules'])/1000)
 
-      print(f'System Efficiency {System_efficiency*100} %')
+      #print(f'System Efficiency {System_efficiency*100} %')
 
       Capacity_factor = (ac['Monthly AC kWh'].sum()/((module['pdc'])/1000)) / (module['number_of_modules']*8760)
 
-      print(f'Capacity Factor {Capacity_factor*100} %')
+      #print(f'Capacity Factor {Capacity_factor*100} %')
 
       Performance_ratio = (ac['Monthly AC kWh'].sum()) / (((ac['Monthly Irradiance'].sum()*module['length']*module['height']*module['number_of_modules'])/1000)*module['efficiency'])
-      print(f'Performance Ratio {Performance_ratio*100} %')
-      print('')
+      #print(f'Performance Ratio {Performance_ratio*100} %')
+      #print('')
 
       return ac['Monthly AC kWh'].sum(),  ac['Monthly AC kWh'].sum()/((module['pdc']*module['number_of_modules'])/1000) , ac['Monthly Irradiance'].sum()/1000, System_efficiency*100, Capacity_factor*100, Performance_ratio*100
 
