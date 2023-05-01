@@ -819,7 +819,7 @@ class PVGIS():
 
       return inputs, final_outputs, meta
 
-    async def retrieve_all_year_bifacial_faster(self, location, azimuth):
+    async def retrieve_all_year_bifacial_faster(location, azimuth):
       import pandas as pd
       import concurrent.futures
       import time
@@ -919,8 +919,6 @@ class PVGIS():
       
       data2 = data2.sort_values(by=['month', 'time'])
       data1 = data1.sort_values(by=['month', 'time'])
-      data1.to_csv('data1.csv')
-      data2.to_csv('data2.csv')
       data2 = data2.drop(['month','T2m'], axis=1)
       final_outputs = data1.add(data2, fill_value=0)
 
@@ -955,6 +953,6 @@ class PVGIS():
                                       'Gd(n)': 'Diffuse irradiance on 2-axis tracking plane'
                                       }, inplace = True)
 
-
+      
       return inputs, final_outputs, meta
 
