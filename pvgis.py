@@ -819,7 +819,7 @@ class PVGIS():
 
       return inputs, final_outputs, meta
 
-    async def retrieve_all_year_bifacial_faster(location, azimuth):
+    async def retrieve_all_year_bifacial_faster(self, location, azimuth):
       import pandas as pd
       import concurrent.futures
       import time
