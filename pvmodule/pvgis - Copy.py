@@ -310,7 +310,7 @@ class PVGIS():
 
         return self.data
 
-    def retrieve_daily(self, latitude: float, longitude: float, month: int, URL_ONLY : int = 0, usehorizon: int = 1, userhorizon: int = None, raddatabase: str = None, angle: int = 0, aspect: int = 0, global_irr: int = 1, glob_2axis: int = 0, clearsky: int = 1, clearsky_2axis: int = 0, showtemperatures: int = 1, localtime: int = 1, outputformat: str = "json", url: str = "http://re.jrc.ec.europa.eu/api/v5_2/", ) -> object:
+    def retrieve_daily(self, latitude: float, longitude: float, month: int, usehorizon: int = 1, userhorizon: int = None, raddatabase: str = None, angle: int = 0, aspect: int = 0, global_irr: int = 1, glob_2axis: int = 0, clearsky: int = 1, clearsky_2axis: int = 0, showtemperatures: int = 1, localtime: int = 1, outputformat: str = "json", url: str = "http://re.jrc.ec.europa.eu/api/v5_2/", ) -> object:
         """
         Daily Data: This method retrieves real-world data using the PVGIS-API.
         The months count start at January=0 and December=11
@@ -406,8 +406,6 @@ class PVGIS():
             url = url + f"&localtime={self.localtime}"
         if self.outputformat != None:
             url = url + f"&outputformat={self.outputformat}"
-        if URL_ONLY == 1:
-          return url, url, url
         self.url = url
 
         data = requests.get(url)
@@ -456,7 +454,6 @@ class PVGIS():
 
     def retrieve_tmy(self, latitude: float,
                      longitude: float,
-                     URL_ONLY: int = 0,
                      usehorizon: int = 1,
                      userhorizon: int = None,
                      startyear: int = None,
@@ -520,8 +517,7 @@ class PVGIS():
         if self.outputformat != None:
             url = url + f"&outputformat={self.outputformat}"
 
-        if URL_ONLY == 1:
-          return url,url, url
+
         self.url = url
         data = requests.get(url)
         status_code = data.status_code
@@ -534,7 +530,9 @@ class PVGIS():
             outputs["time(UTC)"] = pd.to_datetime(outputs["time(UTC)"], format="%Y%m%d:%H%M")
             outputs = outputs.set_index("time(UTC)")
             outputs.index.names = ['time']
+
             inputs = data["inputs"]
+
             meta = data["meta"]
 
         except:
@@ -659,7 +657,7 @@ class PVGIS():
                           aspect = azimuth_backsheet, 
                           glob_2axis = 1)
         
-        while inputs == '429':
+        while inputs2 == '429':
           time.sleep(1)
           inputs2, data2 , metadata2 = PVGIS().retrieve_daily(
                           location.latitude, 
@@ -707,254 +705,3 @@ class PVGIS():
 
       self.data = inputs , data , metadata 
       return self.data
-
-    async def retrieve_all_year_faster(location, panel_tilt, azimuth):
-      import pandas as pd
-      import concurrent.futures
-      import time
-      import asyncio
-      import aiohttp   #!pip install aiohttp aiodns
-      semaphore = asyncio.Semaphore(24)
-      if panel_tilt == 'Optimal':
-        input , _, _ = PVGIS().retrieve_hourly(
-                                            latitude=location.latitude,
-                                            longitude=location.longitude,
-                                            optimalinclination=1
-                                            )
-        panel_tilt = input['mounting_system']['fixed']['slope']['value']
-
-      def load_data(location,panel_tilt, azimuth, month_):
-        inputs, data , metadata = PVGIS().retrieve_daily(
-                              location.latitude, 
-                              location.longitude, 
-                              month= month_,
-                              angle=panel_tilt,
-                              aspect=azimuth,
-                              glob_2axis = 1,
-                              URL_ONLY = 1)
-                                            
-        return data
-
-      async def get(session: aiohttp.ClientSession,url: str) -> dict:
-          #print(f"Requesting {url}")
-          async with semaphore:
-            resp = await session.request('GET', url=url)
-            while resp.status == 429:
-              resp = await session.request('GET', url=url)
-            data = await resp.json()
-            if '/tmy?' in url:
-              return 'TMY', data
-            return 'NORMAL', data
-
-      MONTHS = [1,2,3,4,5,6,7,8,9,10,11,12]
-      list_of_urls = []
-      with concurrent.futures.ThreadPoolExecutor(max_workers=12) as executor:
-          # Start the load operations and mark each future with its URL
-          future_to_url = {executor.submit(load_data, location, panel_tilt, azimuth, month): month for month in MONTHS}
-          for future in concurrent.futures.as_completed(future_to_url):
-              url = future_to_url[future]
-              try:
-                  url = future.result()
-              except Exception as exc:
-                  class FaultyDataInput(Exception):
-                    pass
-                  raise FaultyDataInput(exc)
-              else:
-                list_of_urls.append(url)
-
-      _, tmy_url, _ = PVGIS().retrieve_tmy(location.latitude,location.longitude, URL_ONLY = 1)
-      list_of_urls.append(tmy_url)
-
-      final_outputs = pd.DataFrame()
-      async with aiohttp.ClientSession() as session:
-        tasks = []
-        for c in list_of_urls:
-            tasks.append(get(session=session, url=c))
-
-        total_data = await asyncio.gather(*tasks, return_exceptions=True)
-        
-        for i in range(len(total_data)):
-          type_, data = total_data[i]
-          if type_ == 'TMY':
-            TMY_DATA = data
-            total_data.pop(i)   
-
-      for data in total_data:
-        outputs = data[1]["outputs"]["daily_profile"]
-        outputs = pd.json_normalize(outputs)
-        outputs = outputs.set_index("time")
-        final_outputs =  pd.concat([outputs, final_outputs])
-        inputs = data[1]["inputs"]
-        meta = data[1]["meta"]
-      
-      output_yearly_tmy = TMY_DATA["outputs"]["tmy_hourly"]
-      output_yearly_tmy = pd.json_normalize(output_yearly_tmy)
-      output_yearly_tmy["time(UTC)"] = pd.to_datetime(output_yearly_tmy["time(UTC)"], format="%Y%m%d:%H%M")
-      output_yearly_tmy = output_yearly_tmy.set_index("time(UTC)")
-      output_yearly_tmy.index.names = ['time']
-
-      wind_list_of_lists = []
-      for month in range(1,13):
-        output_tmy = output_yearly_tmy[output_yearly_tmy.index.month == month]
-
-        wind_speed = []
-
-        for hour in range(0,24,1):
-          wind_speed.append(output_tmy.iloc[hour:24+hour, :]['WS10m'].mean())
-        wind_list_of_lists.append(wind_speed)
-      flat_list = [item for sublist in wind_list_of_lists for item in sublist]
-      final_outputs = final_outputs.sort_values(by=['month', 'time'])
-      final_outputs['WS10m'] = flat_list
-      
-      final_outputs.rename(columns = {   'G(i)':'Global irradiance on a fixed plane',
-                                      'Gb(i)':'Direct irradiance on a fixed plane',
-                                      'Gb(n)':'Direct normal irradiance',
-                                      'T2m':'2m Air Temperature',
-                                      'WS10m':'10m Wind speed',
-                                      'G(n)': 'Global irradiance on 2-axis tracking plane',
-                                      'Gd(i)': 'Diffuse irradiance on a fixed plane',
-                                      'Gd(n)': 'Diffuse irradiance on 2-axis tracking plane'
-                                      }, inplace = True)
-
-
-      return inputs, final_outputs, meta
-
-    async def retrieve_all_year_bifacial_faster(location, azimuth):
-      import pandas as pd
-      import concurrent.futures
-      import time
-      import asyncio
-      import aiohttp   #!pip install aiohttp aiodns
-      semaphore = asyncio.Semaphore(24)
-
-      def load_data(location, azimuth, month_):
-            azimuth_backsheet = int(azimuth) + 180
-            if azimuth_backsheet <= 180:
-              pass
-            else:
-              azimuth_backsheet = azimuth_backsheet - 360
-            inputs, data1 , metadata = PVGIS().retrieve_daily(
-                              location.latitude, 
-                              location.longitude, 
-                              month= month_, 
-                              angle = 90, 
-                              aspect = azimuth,
-                              URL_ONLY = 1,
-                              glob_2axis = 1)
-            
-            inputs2, data2 , metadata2 = PVGIS().retrieve_daily(
-                              location.latitude, 
-                              location.longitude, 
-                              month= month_, 
-                              angle = 90, 
-                              URL_ONLY = 1,
-                              aspect = azimuth_backsheet, 
-                              glob_2axis = 1)  
-                                    
-            return data1 , data2
-
-      async def get(session: aiohttp.ClientSession,url: str) -> dict:
-          #print(f"Requesting {url}")
-          async with semaphore:
-            resp = await session.request('GET', url=url)
-            while resp.status == 429:
-              resp = await session.request('GET', url=url)
-            data = await resp.json()
-            if '/tmy?' in url:
-              return 'TMY', data
-            return 'NORMAL', data
-
-      MONTHS = [1,2,3,4,5,6,7,8,9,10,11,12]
-      list_of_urls = []
-      with concurrent.futures.ThreadPoolExecutor(max_workers=12) as executor:
-          # Start the load operations and mark each future with its URL
-          future_to_url = {executor.submit(load_data, location, azimuth, month): month for month in MONTHS}
-          for future in concurrent.futures.as_completed(future_to_url):
-              url = future_to_url[future]
-              try:
-                  url1, url2 = future.result()
-              except Exception as exc:
-                  class FaultyDataInput(Exception):
-                    pass
-                  raise FaultyDataInput(exc)
-              else:
-                list_of_urls.append(url1)
-                list_of_urls.append(url2)
-
-      _, tmy_url, _ = PVGIS().retrieve_tmy(location.latitude,location.longitude, URL_ONLY = 1)
-      list_of_urls.append(tmy_url)
-
-      final_outputs = pd.DataFrame()
-      async with aiohttp.ClientSession() as session:
-        tasks = []
-        for c in list_of_urls:
-            tasks.append(get(session=session, url=c))
-
-        total_data = await asyncio.gather(*tasks, return_exceptions=True)
-        
-        for i in range(len(total_data)):
-          type_, data = total_data[i]
-          if type_ == 'TMY':
-            TMY_DATA = data
-            total_data.pop(i)   
-      azimuth = total_data[0][1]['inputs']['plane']['fixed']['azimuth']['value']  
-
-      data1 = pd.DataFrame()
-      data2 = pd.DataFrame()
-
-      for data in total_data:
-
-        if azimuth == data[1]['inputs']['plane']['fixed']['azimuth']['value']:
-          outputs = data[1]["outputs"]["daily_profile"]
-          outputs = pd.json_normalize(outputs)
-          outputs = outputs.set_index("time")
-          data1 =  pd.concat([outputs, data1])
-          inputs = data[1]["inputs"]
-          meta = data[1]["meta"]
-        else:
-          outputs = data[1]["outputs"]["daily_profile"]
-          outputs = pd.json_normalize(outputs)
-          outputs = outputs.set_index("time")
-          data2 = pd.concat([outputs, data2])
-      
-      data2 = data2.sort_values(by=['month', 'time'])
-      data1 = data1.sort_values(by=['month', 'time'])
-      data1.to_csv('data1.csv')
-      data2.to_csv('data2.csv')
-      data2 = data2.drop(['month','T2m'], axis=1)
-      final_outputs = data1.add(data2, fill_value=0)
-
-        
-      output_yearly_tmy = TMY_DATA["outputs"]["tmy_hourly"]
-      output_yearly_tmy = pd.json_normalize(output_yearly_tmy)
-      output_yearly_tmy["time(UTC)"] = pd.to_datetime(output_yearly_tmy["time(UTC)"], format="%Y%m%d:%H%M")
-      output_yearly_tmy = output_yearly_tmy.set_index("time(UTC)")
-      output_yearly_tmy.index.names = ['time']
-
-      wind_list_of_lists = []
-      for month in range(1,13):
-        output_tmy = output_yearly_tmy[output_yearly_tmy.index.month == month]
-
-        wind_speed = []
-
-        for hour in range(0,24,1):
-          wind_speed.append(output_tmy.iloc[hour:24+hour, :]['WS10m'].mean())
-        wind_list_of_lists.append(wind_speed)
-        
-      flat_list = [item for sublist in wind_list_of_lists for item in sublist]
-      final_outputs = final_outputs.sort_values(by=['month', 'time'])
-      final_outputs['WS10m'] = flat_list
-      
-      final_outputs.rename(columns = {   'G(i)':'Global irradiance on a fixed plane',
-                                      'Gb(i)':'Direct irradiance on a fixed plane',
-                                      'Gb(n)':'Direct normal irradiance',
-                                      'T2m':'2m Air Temperature',
-                                      'WS10m':'10m Wind speed',
-                                      'G(n)': 'Global irradiance on 2-axis tracking plane',
-                                      'Gd(i)': 'Diffuse irradiance on a fixed plane',
-                                      'Gd(n)': 'Diffuse irradiance on 2-axis tracking plane'
-                                      }, inplace = True)
-
-
-      return inputs, final_outputs, meta
-

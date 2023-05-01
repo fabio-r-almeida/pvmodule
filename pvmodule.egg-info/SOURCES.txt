@@ -8,6 +8,7 @@ pvmodule/inverter.py
 pvmodule/irradiance.py
 pvmodule/location.py
 pvmodule/module.py
+pvmodule/pvgis - Copy.py
 pvmodule/pvgis.py
 pvmodule/simulation.py
 pvmodule/system.py
